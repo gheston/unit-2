@@ -6,6 +6,7 @@
 
 // declare map var in global scope
 var map;
+var minValue;
 
 // function to initiate Leaflet map
 function createMap() {
@@ -21,8 +22,42 @@ function createMap() {
     }).addTo(map);
 
     // call getData function
-    getData(map);
+    getData();
 };
+
+function calculateMinValue(data) {
+    //create empty array to store all data values
+    var allValues = [];
+    //loop thru each city
+    for (var city of data.features) {
+
+        // loop thru each year
+        for (var year = 2017; year <= 2021; year += 1) {
+            //get unempolyment rate for current year
+            var value = city.properties["Rate_" + String(year)];
+            // add value to array
+            allValues.push(value);
+        }
+    }
+    // get minimum value of our array
+    var minValue = Math.min(...allValues);
+    
+    console.log(minValue);
+    return minValue;
+    
+};
+
+// calculate the radius of each proportional symbold
+function calcPropRadius(attValue) {
+    // constant factor adjusts symbol sizes evenly
+    var minRadius = 5;
+    //Flannery appearaance compensation formula
+    //var radius = 1.0083 * Math.pow(attValue/minValue, 0.5715) * minRadius;
+    var radius = attValue + minValue + 10;
+    console.log(radius);
+
+    return radius;
+}
 
 // function to attach popups to each mapped feature
 function onEachFeature(feature, layer) {
@@ -40,34 +75,60 @@ function onEachFeature(feature, layer) {
     };
 };
 
-// function to retrieve the data and place it on the map
+// Step 3
+// function to add circle markers for point features to the map
 
-function getData(map) {
+function createPropSymbols(data){
+             
+            // mapping average unemployment rate for 2021
+              var attribute = "Rate_2021"
+
+              // style for brown circle
+              var geoJsonMarkerOptions = {
+                radius: 8,
+                fillColor: "#A65E44",
+                color: "#fff",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            };  
+
+            // create a Leaflet GeoJSON layer and add it to the map
+            L.geoJson(data, {
+                
+                onEachFeature: onEachFeature, // moved this line into the createPropSymbols() function
+
+                pointToLayer: function(feature, latlng) {
+
+                    //step 5, for each feature, determine its value for the selected attribute
+                    var attValue = Number(feature.properties[attribute]);
+
+                    // step 6, give each feature's circle marker a radius based on its attribute value
+                    geoJsonMarkerOptions.radius = calcPropRadius(attValue);
+
+                    // examine the attribute value to check that it is correct
+                    // console.log(feature.properties, attValue);
+
+                    //create circle markers
+                    return L.circleMarker(latlng, geoJsonMarkerOptions); 
+                }
+            }).addTo(map);
+};
+
+// function to retrieve the data and place it on the map
+//step 2
+function getData() {
     // load the data
     fetch("data/metroUnemploymentPop.geojson")
         .then(function (response) {
             return response.json();
         })
-        .then(function (json) {
-
-            // style for brown circle
-            var geoJsonMarkerOptions = {
-                radius: 8,
-                fillColor: "#A65E44",
-                color: "#000",
-                weight: 1,
-                opacity: 1,
-                fillOpacity: 0.8
-            };
-
-            // create a Leaflet GeoJSON layer and add it to the  map
-            L.geoJson(json, {
-                onEachFeature: onEachFeature,
-
-                pointToLayer: function (feature, latlng) {
-                    return L.circleMarker(latlng, geoJsonMarkerOptions);
-                }
-            }).addTo(map);
+        .then(function(json) {
+            // calculate the minimum value
+            minValue = calculateMinValue(json);
+            //call function to create proportional symbols
+            createPropSymbols(json);
+ 
         })
 };
 
