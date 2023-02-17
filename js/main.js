@@ -35,14 +35,19 @@ function calculateMinValue(data) {
         for (var year = 2017; year <= 2021; year += 1) {
             //get unempolyment rate for current year
             var value = city.properties["Rate_" + String(year)];
+            //console.log(value);
             // add value to array
+            if (value) { //some of my data entries are empty, which are "falsy". then the minValue becomes 0, which is a problem in the Flannery equation because it's dividing by the MinValue (0). This test only passes the truthy values into the array.
             allValues.push(value);
+            }
         }
     }
+    
+    console.log(allValues);
     // get minimum value of our array
     var minValue = Math.min(...allValues);
     
-    console.log(minValue);
+    console.log("minValue: ", minValue);
     return minValue;
     
 };
@@ -51,9 +56,9 @@ function calculateMinValue(data) {
 function calcPropRadius(attValue) {
     // constant factor adjusts symbol sizes evenly
     var minRadius = 5;
-    //Flannery appearaance compensation formula
-    //var radius = 1.0083 * Math.pow(attValue/minValue, 0.5715) * minRadius;
-    var radius = attValue + minValue + 10;
+    //Flannery appearance compensation formula
+    var radius = 1.0083 * Math.pow(attValue/minValue, 0.5715) * minRadius;
+
     console.log(radius);
 
     return radius;
