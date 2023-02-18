@@ -10,3 +10,7 @@ h1, h3 {
 p {
     font-family: 'Jost', sans-serif;
 }
+
+.leaflet-popup-content p {
+    margin: 0.2em 0;
+}

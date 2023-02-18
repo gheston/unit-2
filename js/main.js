@@ -37,13 +37,13 @@ function calculateMinValue(data) {
             var value = city.properties["Rate_" + String(year)];
             //console.log(value);
             // add value to array
-            if (value) { //some of my data entries are empty, which are "falsy". then the minValue becomes 0, which is a problem in the Flannery equation because it's dividing by the MinValue (0). This test only passes the truthy values into the array.
+            if (value) { //some of my data entries are null, which are "falsy". then the minValue becomes 0, which is a problem in the Flannery equation because it's dividing by the MinValue (0). This test only passes the truthy (non-null) values into the array.
             allValues.push(value);
             }
         }
     }
     
-    console.log(allValues);
+//    console.log(allValues);
     // get minimum value of our array
     var minValue = Math.min(...allValues);
     
@@ -59,64 +59,86 @@ function calcPropRadius(attValue) {
     //Flannery appearance compensation formula
     var radius = 1.0083 * Math.pow(attValue/minValue, 0.5715) * minRadius;
 
-    console.log(radius);
+    //console.log(radius);
 
     return radius;
 }
 
-// function to attach popups to each mapped feature
-function onEachFeature(feature, layer) {
-    //no property named popupContent in Megacities; instead, create HTML string w/ all properties
-    var popupContent = "";
-    if (feature.properties) {
-        //loop to add feature property names and values to html string
-        for (var property in feature.properties) {
-            popupContent += "<p>" + property + ": " + feature.properties[property] + "</p>";
-        }
-        //console.log(popupContent);
-        layer.bindPopup(popupContent); 
-        // add a tooltip with the central city name
-        layer.bindTooltip(feature.properties.City)
-    };
-};
+// // function to attach popups to each mapped feature
+// function onEachFeature(feature, layer) {
+//     //no property named popupContent in Megacities; instead, create HTML string w/ all properties
+//     var popupContent = "";
+//     if (feature.properties) {
+//         //loop to add feature property names and values to html string
+//         for (var property in feature.properties) {
+//             popupContent += "<p>" + property + ": " + feature.properties[property] + "</p>";
+//         }
+//         //console.log(popupContent);
+//         layer.bindPopup(popupContent); 
+//         // add a tooltip with the central city name
+//         layer.bindTooltip(feature.properties.City)
+//     };
+// };
 
 // Step 3
 // function to add circle markers for point features to the map
 
+
+//function to convert markers to circle markers
+function pointToLayer(feature, latlng) {
+    // mapping average unemployment rate for 2021
+    var attribute = "Rate_2021"
+
+    // style for brown circle
+    var geoJsonMarkerOptions = {
+        radius: 8,
+        fillColor: "#A65E44",
+        color: "#fff",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+    };
+
+    //step 5, for each feature, determine its value for the selected attribute
+    var attValue = Number(feature.properties[attribute]);
+    //console.log(attValue);
+
+    // step 6, give each feature's circle marker a radius based on its attribute value
+    geoJsonMarkerOptions.radius = calcPropRadius(attValue);
+    //console.log(geoJsonMarkerOptions.radius);
+
+    //create circle marker layer
+    var layer = L.circleMarker(latlng, geoJsonMarkerOptions);
+
+    //build popup content string
+    var popupContent = "<p><b>Metro Area:</b> " + feature.properties.MetropolitanArea + "</p>";
+    
+    var year = attribute.split('_')[1];
+
+    popupContent += "<p><b>Average unemployment rate in " + year + ":</b> " + feature.properties[attribute] + "%</p>";
+    //console.log(popupContent);
+
+    //bind the popup to the circle marker
+    layer.bindPopup(popupContent , {
+        offset: new L.Point(0, -geoJsonMarkerOptions.radius)
+    });
+
+    //return the circle marker to the L.geoJson pointToLayer option
+    return layer;
+
+};
+
 function createPropSymbols(data){
-             
-            // mapping average unemployment rate for 2021
-              var attribute = "Rate_2021"
-
-              // style for brown circle
-              var geoJsonMarkerOptions = {
-                radius: 8,
-                fillColor: "#A65E44",
-                color: "#fff",
-                weight: 1,
-                opacity: 1,
-                fillOpacity: 0.8
-            };  
-
             // create a Leaflet GeoJSON layer and add it to the map
             L.geoJson(data, {
                 
-                onEachFeature: onEachFeature, // moved this line into the createPropSymbols() function
+                //onEachFeature: onEachFeature, // moved this line into the createPropSymbols() function
 
-                pointToLayer: function(feature, latlng) {
-
-                    //step 5, for each feature, determine its value for the selected attribute
-                    var attValue = Number(feature.properties[attribute]);
-
-                    // step 6, give each feature's circle marker a radius based on its attribute value
-                    geoJsonMarkerOptions.radius = calcPropRadius(attValue);
-
-                    // examine the attribute value to check that it is correct
-                    // console.log(feature.properties, attValue);
+                pointToLayer: pointToLayer
 
                     //create circle markers
-                    return L.circleMarker(latlng, geoJsonMarkerOptions); 
-                }
+                 //   return L.circleMarker(latlng, geoJsonMarkerOptions); 
+                
             }).addTo(map);
 };
 
@@ -124,7 +146,7 @@ function createPropSymbols(data){
 //step 2
 function getData() {
     // load the data
-    fetch("data/metroUnemploymentPop.geojson")
+    fetch("data/metroUnemploymentPop3.geojson")
         .then(function (response) {
             return response.json();
         })
