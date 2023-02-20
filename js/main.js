@@ -47,7 +47,7 @@ function calculateMinValue(data) {
     // get minimum value of our array
     var minValue = Math.min(...allValues);
     
-    console.log("minValue: ", minValue);
+    //console.log("minValue: ", minValue);
     return minValue;
     
 };
@@ -142,21 +142,70 @@ function createPropSymbols(data){
             }).addTo(map);
 };
 
+// create new sequence controls
+function createSequenceControls() {
+    //create range input element (slider)
+    var slider = "<input class='range-slider' type='range'></input>";
+    document.querySelector("#panel").insertAdjacentHTML('beforeend', slider);
+
+    //set slider attributes
+    document.querySelector(".range-slider").max = 4; // total ranges 5, 2017 to 2021
+    document.querySelector(".range-slider").min = 0; // first range index
+    document.querySelector(".range-slider").value = 0;
+    document.querySelector(".range-slider").step = 1;
+
+    // add step buttons
+    document.querySelector('#panel').insertAdjacentHTML('beforeend','<button class="step" id="reverse">Rev</button>');
+    document.querySelector('#panel').insertAdjacentHTML('beforeend','<button class="step" id="forward">For</button>');
+
+    // replace button content with images
+    // document.querySelector('#reverse').insertAdjacentHTML('beforeend', '<i class="fa-solid fa-backward"></i>');
+    // document.querySelector('#forward').insertAdjacentHTML('beforeend', '<i class="fa-solid fa-forward"></i>');
+
+
+};
+
+//build an attributes array from the data
+function processData(data) {
+    //empty array to hold attributes
+    var attributes = [];
+
+    //properties of the 1st feature in the dataset
+    var properties = data.features[0].properties;
+
+    //push each attribute name into attributes array
+    for (var attribute in properties) {
+        //only take attributes with population values
+        if (attribute.indexOf("Rate") > -1) {
+            attributes.push(attribute);
+        };
+    };
+
+    //check result
+    console.log(attributes);
+
+    return attributes;
+};
+
+
 // function to retrieve the data and place it on the map
 //step 2
 function getData() {
     // load the data
-    fetch("data/metroUnemploymentPop3.geojson")
+    fetch("data/metroUnemploymentPop4.geojson")
         .then(function (response) {
             return response.json();
         })
         .then(function(json) {
+            //create an attribute array
+            var attributes = processData(json);
             // calculate the minimum value
             minValue = calculateMinValue(json);
             //call function to create proportional symbols
             createPropSymbols(json);
- 
-        })
+            //call function to create the proportional symbols
+            createSequenceControls();
+         })
 };
 
 document.addEventListener('DOMContentLoaded', createMap);
