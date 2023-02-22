@@ -1,5 +1,5 @@
 // GeoJSON with Leaflet
-// Gerald Heston, Geog 575-070, Lab 1, Activity 6, Feb 20 2023
+// Gerald Heston, Geog 575-070, Lab 1, Activity 6, Feb 21 2023
 
 // declare map var in global scope
 var map;
