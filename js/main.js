@@ -69,8 +69,10 @@ function calcPropRadius(attValue) {
 //function to convert markers to circle markers
 function pointToLayer(feature, latlng, attributes) {
     // mapping average unemployment rate for 2021
+    //console.log(attributes);
+    
     var attribute = attributes[0];
-    console.log(attribute);
+    //console.log(attribute);
 
     // style for brown circle
     var geoJsonMarkerOptions = {
@@ -94,13 +96,8 @@ function pointToLayer(feature, latlng, attributes) {
     var layer = L.circleMarker(latlng, geoJsonMarkerOptions);
 
     //build popup content string
-    //var popupContent = "<p><b>Metro Area:</b> " + feature.properties.MetropolitanArea + "</p>";
+
     var popupContent =  new PopupContent(feature.properties, attribute);
-
-    // var year = attribute.split('_')[1];
-
-    //popupContent += "<p><b>Average unemployment rate in " + year + ":</b> " + feature.properties[attribute] + "%</p>";
-    //console.log(popupContent);
 
     //bind the popup to the circle marker
     layer.bindPopup(popupContent.formatted, {
@@ -125,62 +122,8 @@ function createPropSymbols(data, attributes) {
         //   return L.circleMarker(latlng, geoJsonMarkerOptions); 
 
     }).addTo(map);
-};
 
-// create new sequence controls
-function createSequenceControls(attributes) {
-    //create range input element (slider)
-    var slider = "<input class='range-slider' type='range'></input>";
-    document.querySelector("#panel").insertAdjacentHTML('beforeend', slider);
 
-    //set slider attributes
-    document.querySelector(".range-slider").max = 6; // total ranges 7, 2016 to 2022
-    document.querySelector(".range-slider").min = 0; // first range index
-    document.querySelector(".range-slider").value = 0;
-    document.querySelector(".range-slider").step = 1;
-
-    // add step buttons
-    document.querySelector('#panel').insertAdjacentHTML('beforeend', '<button class="step" id="reverse"></button>');
-    document.querySelector('#panel').insertAdjacentHTML('beforeend', '<button class="step" id="forward"></button>');
-
-    // replace button content with images
-    document.querySelector('#reverse').insertAdjacentHTML('beforeend', '<i class="fa-solid fa-backward"></i>');
-    document.querySelector('#forward').insertAdjacentHTML('beforeend', '<i class="fa-solid fa-forward"></i>');
-
-    // Step 5 click listener for buttons
-    document.querySelectorAll('.step').forEach(function (step) {
-        step.addEventListener("click", function () {
-            var index = document.querySelector('.range-slider').value;
-
-            //Step 6 increment or decrement depending on button clicked
-            if (step.id == 'forward') {
-                index++;
-                //step 7: if past the last attribute, wrap around to first attribute
-                index = index > 6 ? 0 : index;
-
-            } else if (step.id == 'reverse') {
-                index--;
-                //step 7: if past the first attribute, wrap around to the last attribute
-                index < 0 ? 6 : index;
-            };
-
-            // step 8: update slider
-            document.querySelector('.range-slider').value = index;
-
-            // step 9 pass new attribute to update symbols
-            updatePropSymbols(attributes[index]);
-        })
-    });
-
-    // Step 5 input listener for slider
-    document.querySelector('.range-slider').addEventListener('input', function () {
-        // get the new index value
-        var index = this.value;
-        console.log(index);
-
-        // step 9 pass new attribute to update symbols
-        updatePropSymbols(attributes[index]);
-    });
 };
 
 // secton 1-3-2 custom leaflet control version of createSequenceControls()
@@ -189,17 +132,70 @@ function createSequenceControls(attributes) {
         options: {
             position: 'bottomleft'
         },
+
         onAdd: function () {
             // create the control container div with a particular class  name
             var container = L.DomUtil.create('div', 'sequence-control-container');
 
             // initialize other DOM elements
+            //create range input element (slider)
+  
+            container.insertAdjacentHTML('beforeend', "<input class='range-slider' type='range'></input>");
+
+            // add step buttons
+            container.insertAdjacentHTML('beforeend', '<button class="step" id="reverse" title="Reverse"><i class="fa-solid fa-backward"></i></button>');
+            container.insertAdjacentHTML('beforeend', '<button class="step" id="forward" title="Forward"><i class="fa-solid fa-forward"></i> </button>');
+
+            // disable any mouse event listeners for the container
+            L.DomEvent.disableClickPropagation(container);
 
             return container;
         }
     });
 
     map.addControl(new SequenceControl()); //add listeners after adding control
+
+            // Step 5 click listener for buttons
+
+            // //set slider attributes
+            document.querySelector(".range-slider").max = 6; // total ranges 7, 2016 to 2022
+            document.querySelector(".range-slider").min = 0; // first range index
+            document.querySelector(".range-slider").value = 0;
+            document.querySelector(".range-slider").step = 1;
+
+            document.querySelectorAll('.step').forEach(function (step) {
+                step.addEventListener("click", function () {
+                    var index = document.querySelector('.range-slider').value;
+
+                    //Step 6 increment or decrement depending on button clicked
+                    if (step.id == 'forward') {
+                        index++;
+                        //step 7: if past the last attribute, wrap around to first attribute
+                        index = index > 6 ? 0 : index;
+
+                    } else if (step.id == 'reverse') {
+                        index--;
+                        //step 7: if past the first attribute, wrap around to the last attribute
+                        index < 0 ? 6 : index;
+                    };
+
+                    // step 8: update slider
+                    document.querySelector('.range-slider').value = index;
+
+                    // step 9 pass new attribute to update symbols
+                    updatePropSymbols(attributes[index]);
+                })
+            });
+
+            // Step 5 input listener for slider
+            document.querySelector('.range-slider').addEventListener('input', function () {
+                // get the new index value
+                var index = this.value;
+                //console.log(index);
+
+                // step 9 pass new attribute to update symbols
+                updatePropSymbols(attributes[index]);
+            });
 }
 
 
@@ -214,13 +210,6 @@ function updatePropSymbols(attribute) {
             var radius = calcPropRadius(props[attribute]);
             layer.setRadius(radius);
 
-            // // add city to popup content string
-            // var popupContent = "<p><b>Metropolitan Area:</b> " + props.MetropolitanArea + "</p>";
-
-            // // add formatted attribute to panel content string
-            // var year = attribute.split("_")[1];
-            // popupContent += "<p><b>Unemployment Rate in " + year + ":</b> " + props[attribute] + "%</p>";
-
             var popupContent = new PopupContent(props, attribute);
 
             //update popup content
@@ -228,7 +217,11 @@ function updatePropSymbols(attribute) {
             popup.setContent(popupContent.formatted).update();
 
         };
+        
     });
+
+    updateLegend(attribute);
+
 };
 
 //build an attributes array from the data
@@ -270,6 +263,8 @@ function getData(map) {
             createPropSymbols(json, attributes);
             //call function to create the proportional symbols
             createSequenceControls(attributes);
+            // call function to create the legend with text for the 1st year, 2016
+            createLegend(attributes[0]);
         })
 };
 
@@ -290,6 +285,36 @@ function PopupContent(properties, attribute) {
     this.year = attribute.split("_")[1];
     this.unemploymentRate = this.properties[attribute];
     this.formatted = "<p><b>" + this.properties.MetropolitanArea + "</b></p><p>Average Unemployment Rate in <b>" + this.year + ":</b><h4>" + this.unemploymentRate + "%</h4></p>";
+};
+
+//function to create a Legend with text and proportional symbols
+function createLegend(attributes){
+    var LegendControl = L.Control.extend({
+        options: {
+            position: 'bottomright'
+        },
+
+        onAdd: function () {
+            //create the control container with a particular class name
+            var container = L.DomUtil.create('div', 'legend-control-container');
+
+
+            var year = attributes.split("_")[1];
+            container.insertAdjacentHTML('beforeend', "<p>Average Unemployment Rate in <strong>" + year + "</strong></p>" );
+
+            return container;
+        }
+    });
+
+    map.addControl(new LegendControl());
+};
+
+//function to update the legend with the current year when the time slider is updated
+function updateLegend(attributes) {
+    var container = document.querySelector('.legend-control-container')
+    var year = attributes.split("_")[1];
+    // selec the legend-control-container div and use innerHTML to replace the text with the current year
+    container.innerHTML = ('beforeend', "<p>Average Unemployment Rate in <strong>" + year + "</strong></p>");
 };
 
 document.addEventListener('DOMContentLoaded', createMap);
