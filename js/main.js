@@ -29,7 +29,7 @@ function calculateMinValue(data) {
     for (var city of data.features) {
 
         // loop thru each year
-        for (var year = 2017; year <= 2021; year += 1) {
+        for (var year = 2016; year <= 2022; year += 1) {
             //get unempolyment rate for current year
             var value = city.properties["Rate_" + String(year)];
             //console.log(value);
@@ -61,22 +61,6 @@ function calcPropRadius(attValue) {
 
     return radius;
 }
-
-// // function to attach popups to each mapped feature
-// function onEachFeature(feature, layer) {
-//     //no property named popupContent in Megacities; instead, create HTML string w/ all properties
-//     var popupContent = "";
-//     if (feature.properties) {
-//         //loop to add feature property names and values to html string
-//         for (var property in feature.properties) {
-//             popupContent += "<p>" + property + ": " + feature.properties[property] + "</p>";
-//         }
-//         //console.log(popupContent);
-//         layer.bindPopup(popupContent); 
-//         // add a tooltip with the central city name
-//         layer.bindTooltip(feature.properties.City)
-//     };
-// };
 
 // Step 3
 // function to add circle markers for point features to the map
@@ -110,15 +94,16 @@ function pointToLayer(feature, latlng, attributes) {
     var layer = L.circleMarker(latlng, geoJsonMarkerOptions);
 
     //build popup content string
-    var popupContent = "<p><b>Metro Area:</b> " + feature.properties.MetropolitanArea + "</p>";
+    //var popupContent = "<p><b>Metro Area:</b> " + feature.properties.MetropolitanArea + "</p>";
+    var popupContent =  new PopupContent(feature.properties, attribute);
 
-    var year = attribute.split('_')[1];
+    // var year = attribute.split('_')[1];
 
-    popupContent += "<p><b>Average unemployment rate in " + year + ":</b> " + feature.properties[attribute] + "%</p>";
+    //popupContent += "<p><b>Average unemployment rate in " + year + ":</b> " + feature.properties[attribute] + "%</p>";
     //console.log(popupContent);
 
     //bind the popup to the circle marker
-    layer.bindPopup(popupContent, {
+    layer.bindPopup(popupContent.formatted, {
         offset: new L.Point(0, -geoJsonMarkerOptions.radius)
     });
 
@@ -149,7 +134,7 @@ function createSequenceControls(attributes) {
     document.querySelector("#panel").insertAdjacentHTML('beforeend', slider);
 
     //set slider attributes
-    document.querySelector(".range-slider").max = 4; // total ranges 5, 2017 to 2021
+    document.querySelector(".range-slider").max = 6; // total ranges 7, 2016 to 2022
     document.querySelector(".range-slider").min = 0; // first range index
     document.querySelector(".range-slider").value = 0;
     document.querySelector(".range-slider").step = 1;
@@ -198,6 +183,26 @@ function createSequenceControls(attributes) {
     });
 };
 
+// secton 1-3-2 custom leaflet control version of createSequenceControls()
+function createSequenceControls(attributes) {
+    var SequenceControl = L.Control.extend({
+        options: {
+            position: 'bottomleft'
+        },
+        onAdd: function () {
+            // create the control container div with a particular class  name
+            var container = L.DomUtil.create('div', 'sequence-control-container');
+
+            // initialize other DOM elements
+
+            return container;
+        }
+    });
+
+    map.addControl(new SequenceControl()); //add listeners after adding control
+}
+
+
 // step 10 resize proportional symbols according to new attribute values
 function updatePropSymbols(attribute) {
     map.eachLayer(function (layer) {
@@ -209,16 +214,18 @@ function updatePropSymbols(attribute) {
             var radius = calcPropRadius(props[attribute]);
             layer.setRadius(radius);
 
-            // add city to popup content string
-            var popupContent = "<p><b>Metropolitan Area:</b> " + props.MetropolitanArea + "</p>";
+            // // add city to popup content string
+            // var popupContent = "<p><b>Metropolitan Area:</b> " + props.MetropolitanArea + "</p>";
 
-            // add formatted attribute to panel content string
-            var year = attribute.split("_")[1];
-            popupContent += "<p><b>Unemployment Rate in " + year + ":</b> " + props[attribute] + "%</p>";
+            // // add formatted attribute to panel content string
+            // var year = attribute.split("_")[1];
+            // popupContent += "<p><b>Unemployment Rate in " + year + ":</b> " + props[attribute] + "%</p>";
+
+            var popupContent = new PopupContent(props, attribute);
 
             //update popup content
             popup = layer.getPopup();
-            popup.setContent(popupContent).update();
+            popup.setContent(popupContent.formatted).update();
 
         };
     });
@@ -241,7 +248,7 @@ function processData(data) {
     };
 
     //check result
-    console.log(attributes);
+    //console.log(attributes);
 
     return attributes;
 };
@@ -250,7 +257,7 @@ function processData(data) {
 //step 2
 function getData(map) {
     // load the data
-    fetch("data/metroUnemploymentPop4.geojson")
+    fetch("data/metroUnemploymentPop5.geojson")
         .then(function (response) {
             return response.json();
         })
@@ -264,6 +271,25 @@ function getData(map) {
             //call function to create the proportional symbols
             createSequenceControls(attributes);
         })
+};
+
+// function createPopupContent(properties, attribute) {
+//     // add city to popup content string
+//     var popupContent = "<p><b>Metropolitan Area:</b> " + properties.MetropolitanArea + "</p>";
+
+//     //add formatted attribute to panel content string
+//     var year = attribute.split("_")[1];
+//     popupContent += "<p><b>Average Unemployment Rate in " + year + ":</b> " + properties[attribute] + "%</p>";
+
+//     return popupContent;
+// };
+
+function PopupContent(properties, attribute) {
+    this.properties = properties;
+    this.attribute = attribute;
+    this.year = attribute.split("_")[1];
+    this.unemploymentRate = this.properties[attribute];
+    this.formatted = "<p><b>" + this.properties.MetropolitanArea + "</b></p><p>Average Unemployment Rate in <b>" + this.year + ":</b><h4>" + this.unemploymentRate + "%</h4></p>";
 };
 
 document.addEventListener('DOMContentLoaded', createMap);
