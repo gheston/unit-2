@@ -1,9 +1,13 @@
 // GeoJSON with Leaflet
-// Gerald Heston, Geog 575-070, Lab 1, Activity 6, Feb 21 2023
+// Gerald Heston, Geog 575-070, Lab 1, Feb 26 2023
 
 // declare map var in global scope
 var map;
-var minValue;
+// declare an object to hold statistics for the entire dataset
+var dataStats = {};
+
+// declare an array to hold statistics for each year
+var yearlyStats = [];
 
 // function to initiate Leaflet map
 function createMap() {
@@ -22,16 +26,18 @@ function createMap() {
     getData();
 };
 
-function calculateMinValue(data) {
+function calcStats(data) {
     //create empty array to store all data values
     var allValues = [];
+
+
     //loop thru each city
     for (var city of data.features) {
 
         // loop thru each year
         for (var year = 2016; year <= 2022; year += 1) {
             //get unempolyment rate for current year
-            var value = city.properties["Rate_" + String(year)];
+            var value = Number(city.properties["Rate_" + String(year)]); // had to add the Number() - to make sure it was reading them all as numbers and not strings - 
             //console.log(value);
             // add value to array
             if (value) { //some of my data entries are null, which are "falsy". then the minValue becomes 0, which is a problem in the Flannery equation because it's dividing by the MinValue (0). This test only passes the truthy (non-null) values into the array.
@@ -42,11 +48,61 @@ function calculateMinValue(data) {
     }
 
     //    console.log(allValues);
-    // get minimum value of our array
-    var minValue = Math.min(...allValues);
+    // get min, max stats for our array
+    dataStats.min = Math.min(...allValues);
+    dataStats.max = Math.max(...allValues);
+    // calculate mean value
+    var sum = allValues.reduce((a, b) =>  a + b);
+    //console.log("sum: ", sum);
+    dataStats.mean = Math.round(sum / allValues.length * 10) / 10; //rounds to 1 decimal place
 
-    //console.log("minValue: ", minValue);
-    return minValue;
+    // console.log("max: ", dataStats.max);
+    // console.log("mean: ", dataStats.mean);
+    // console.log("min: ", dataStats.min);
+    // //return minValue;
+
+};
+
+// function to calculate statistics for eah year of data
+function calcYearlyStats(data) {
+    //empty array for yearly values
+    var yearlyValues = [];
+
+    // this for/for loop is inverted from calcStats() so it only runs for the 7 columns
+    for (var year = 2016; year <= 2022; year += 1) {
+        for (var city of data.features) {
+            
+            var value = Number(city.properties["Rate_" + String(year)]);
+            yearlyValues.push(value);
+
+        }
+        
+        //calculates the statistics
+        var yearlyMin = Math.min(...yearlyValues);
+        var yearlyMax = Math.max(...yearlyValues);
+        var yearlyMean = yearlyValues.reduce((a, b) => a + b) / yearlyValues.length;
+
+        //emtpy temp object
+        var oneYearStats = {};
+
+        // creates the object with statistics
+        //this is probably reduntant, could be combined with steps above
+        oneYearStats.year = year;
+        oneYearStats.min = yearlyMin;
+        oneYearStats.max = yearlyMax;
+        oneYearStats.mean = Math.round(yearlyMean * 10) / 10;
+
+        //adds the one-year object to the yearlyStats[] array
+        yearlyStats.push(oneYearStats);
+        
+        //empties out the array to start the loop over fresh
+        yearlyValues = [];
+    }
+
+    //prints the yearlyStats[] to the console
+    // for (var i = 0; i < yearlyStats.length;  i++) {
+    //     console.log(yearlyStats[i]);
+    // }
 
 };
 
@@ -55,7 +111,7 @@ function calcPropRadius(attValue) {
     // constant factor adjusts symbol sizes evenly
     var minRadius = 5;
     //Flannery appearance compensation formula
-    var radius = 1.0083 * Math.pow(attValue / minValue, 0.5715) * minRadius;
+    var radius = 1.0083 * Math.pow(attValue / dataStats.min, 0.5715) * minRadius;
 
     //console.log(radius);
 
@@ -198,8 +254,7 @@ function createSequenceControls(attributes) {
             });
 }
 
-
-// step 10 resize proportional symbols according to new attribute values
+// resize proportional symbols according to new attribute values
 function updatePropSymbols(attribute) {
     map.eachLayer(function (layer) {
         if (layer.feature && layer.feature.properties[attribute]) {
@@ -217,11 +272,19 @@ function updatePropSymbols(attribute) {
             popup.setContent(popupContent.formatted).update();
 
         };
-        
     });
 
-    updateLegend(attribute);
+    // update the legend with the year displayed on the map
+    var year = attribute.split("_")[1];
+    
+    // get the index for the currently dipslayed year from yearlyStats{}
+    var yearStatsIndex = findYearlyStats(year);
 
+    // replace the year and stats in the legend with those for the currently displayed year    
+    document.querySelector("span.year").innerHTML = year;
+    document.querySelector("span.min").innerHTML = yearlyStats[yearStatsIndex].min;
+    document.querySelector("span.mean").innerHTML = yearlyStats[yearStatsIndex].mean;
+    document.querySelector("span.max").innerHTML = yearlyStats[yearStatsIndex].max;
 };
 
 //build an attributes array from the data
@@ -247,7 +310,6 @@ function processData(data) {
 };
 
 // function to retrieve the data and place it on the map
-//step 2
 function getData(map) {
     // load the data
     fetch("data/metroUnemploymentPop5.geojson")
@@ -258,7 +320,10 @@ function getData(map) {
             //create an attribute array
             var attributes = processData(json);
             // calculate the minimum value
-            minValue = calculateMinValue(json);
+            calcStats(json);
+
+            // calculate the yearly stats
+            calcYearlyStats(json);
             //call function to create proportional symbols
             createPropSymbols(json, attributes);
             //call function to create the proportional symbols
@@ -267,17 +332,6 @@ function getData(map) {
             createLegend(attributes[0]);
         })
 };
-
-// function createPopupContent(properties, attribute) {
-//     // add city to popup content string
-//     var popupContent = "<p><b>Metropolitan Area:</b> " + properties.MetropolitanArea + "</p>";
-
-//     //add formatted attribute to panel content string
-//     var year = attribute.split("_")[1];
-//     popupContent += "<p><b>Average Unemployment Rate in " + year + ":</b> " + properties[attribute] + "%</p>";
-
-//     return popupContent;
-// };
 
 function PopupContent(properties, attribute) {
     this.properties = properties;
@@ -298,9 +352,45 @@ function createLegend(attributes){
             //create the control container with a particular class name
             var container = L.DomUtil.create('div', 'legend-control-container');
 
-
+            //start with the first year
             var year = attributes.split("_")[1];
-            container.insertAdjacentHTML('beforeend', "<p>Average Unemployment Rate in <strong>" + year + "</strong></p>" );
+
+            // get the index of the currently year in the yearlyStats
+            var yearStatsIndex = findYearlyStats(year);
+
+            //insert text "Average Unemployment Rate in *Year*"
+            //            "Min: x% - Mean: x% - Max: x%" - stats for the currently displayed year, to keep them separate from the 
+            //                  symbol legend which displays stats for the entire time range
+            container.innerHTML = '<p class="temporal legend">Average Unemployment Rate in <span class="year">' + year + '</span></p>' + '<p>Min: <span class="min">' + yearlyStats[yearStatsIndex].min + '</span>% - Mean: <span class="mean">' + yearlyStats[yearStatsIndex].mean + '</span> % - Max: <span class="max">' + yearlyStats[yearStatsIndex].max + '</span>%</p>' + '<p>---</p><p>Ranges over time period:' ;
+
+            // start the svg element 
+            var svg = '<svg id="attribute legend" width="160px" height="60px">';
+            
+            //array of circle names to base loop on
+            var circles = ["max", "mean", "min"];
+
+            // loop to add each circle and text to svg string
+            for (var i=0; i<circles.length; i++) {
+                
+                // assign the r and cy attributes
+                var radius = calcPropRadius(dataStats[circles[i]]);
+                var cy = 50 - radius;
+                
+                //circle string
+                svg += '<circle class="legend-circle" id="' + circles[i] + '" r="' + radius + '"cy="' + cy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
+
+                // evenly space out labels
+                var textY = i * 15 + 20;
+
+                // text string; i didn't want the min/max/mean, just the numbers
+                svg += '<text id="' + circles[i] + '-text" x="65" y="' + textY + '">'  + dataStats[circles[i]] + ' %' + '</text>';
+            };
+            
+            //close svg string
+            svg += "</svg>";
+            
+            //add attribute legend svg to container
+            container.insertAdjacentHTML('beforeend', svg);
 
             return container;
         }
@@ -309,13 +399,15 @@ function createLegend(attributes){
     map.addControl(new LegendControl());
 };
 
-//function to update the legend with the current year when the time slider is updated
-function updateLegend(attributes) {
-    var container = document.querySelector('.legend-control-container')
-    var year = attributes.split("_")[1];
-    // selec the legend-control-container div and use innerHTML to replace the text with the current year
-    container.innerHTML = ('beforeend', "<p>Average Unemployment Rate in <strong>" + year + "</strong></p>");
-};
+
+//function to find the index in yearlyStats for the currently displayed year
+function findYearlyStats(year4Stats) {
+
+    var index = yearlyStats.findIndex(year1 => year1.year == year4Stats);
+
+    return index;
+    
+}
 
 document.addEventListener('DOMContentLoaded', createMap);
 
