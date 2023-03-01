@@ -5,13 +5,9 @@
     display: inline-block;
 }
 
-
-
 h1, h3, h4, text, p {
     font-family: 'Jost', sans-serif;
 }
-
-
 
 h4 {
     font-size: 18px;
@@ -67,10 +63,7 @@ h4 {
 
 .legend-control-container {
     width: 220px;
-    /* height: 300px; */
     background-color: rgba(255,255,255,0.8);
-    /* padding: 10px; */
-    /* line-height: 45px; */
     text-align: center;
     border: solid gray 1px;
 }

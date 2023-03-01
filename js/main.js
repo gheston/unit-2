@@ -1,5 +1,5 @@
 // GeoJSON with Leaflet
-// Gerald Heston, Geog 575-070, Lab 1, Feb 26 2023
+// Gerald Heston, Geog 575-070, Lab 1, Feb 28 2023
 
 // declare map var in global scope
 var map;
@@ -17,7 +17,7 @@ function createMap() {
         zoom: 4
     });
 
-    // add my Midcentury Modern Mappbox base tile layer
+    // add my Midcentury Modern Mapbox base tile layer
     L.tileLayer('https://api.mapbox.com/styles/v1/geraldhestonwisc/claki7gyd000114nxihcnqa4p/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZ2VyYWxkaGVzdG9ud2lzYyIsImEiOiJja3ludzB3d3kwN2EyMndyMDN3cGh4dXkwIn0.INriYzJUUk60r1ffeQBr9g', {
         attribution: '&copy; <a href="https://www.mapbox.com/contribute/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
@@ -39,6 +39,7 @@ function calcStats(data) {
             //get unempolyment rate for current year
             var value = Number(city.properties["Rate_" + String(year)]); // had to add the Number() - to make sure it was reading them all as numbers and not strings - 
             //console.log(value);
+            
             // add value to array
             if (value) { //some of my data entries are null, which are "falsy". then the minValue becomes 0, which is a problem in the Flannery equation because it's dividing by the MinValue (0). This test only passes the truthy (non-null) values into the array.
                 // removed the data rows with null values so  I wouldn't have to deal with them.
@@ -55,12 +56,9 @@ function calcStats(data) {
     var sum = allValues.reduce((a, b) =>  a + b);
     //console.log("sum: ", sum);
     dataStats.mean = Math.round(sum / allValues.length * 10) / 10; //rounds to 1 decimal place
-
     // console.log("max: ", dataStats.max);
     // console.log("mean: ", dataStats.mean);
     // console.log("min: ", dataStats.min);
-    // //return minValue;
-
 };
 
 // function to calculate statistics for eah year of data
@@ -71,10 +69,8 @@ function calcYearlyStats(data) {
     // this for/for loop is inverted from calcStats() so it only runs for the 7 columns
     for (var year = 2016; year <= 2022; year += 1) {
         for (var city of data.features) {
-            
             var value = Number(city.properties["Rate_" + String(year)]);
             yearlyValues.push(value);
-
         }
         
         //calculates the statistics
@@ -82,7 +78,7 @@ function calcYearlyStats(data) {
         var yearlyMax = Math.max(...yearlyValues);
         var yearlyMean = yearlyValues.reduce((a, b) => a + b) / yearlyValues.length;
 
-        //emtpy temp object
+        //emtpy temp object that will get populated and appended to the yearlyValues[]
         var oneYearStats = {};
 
         // creates the object with statistics
@@ -99,7 +95,7 @@ function calcYearlyStats(data) {
         yearlyValues = [];
     }
 
-    //prints the yearlyStats[] to the console
+    // prints the yearlyStats[] to the console
     // for (var i = 0; i < yearlyStats.length;  i++) {
     //     console.log(yearlyStats[i]);
     // }
@@ -118,13 +114,11 @@ function calcPropRadius(attValue) {
     return radius;
 }
 
-// Step 3
-// function to add circle markers for point features to the map
 
 
 //function to convert markers to circle markers
 function pointToLayer(feature, latlng, attributes) {
-    // mapping average unemployment rate for 2021
+    // mapping average unemployment rate for each year
     //console.log(attributes);
     
     var attribute = attributes[0];
@@ -152,7 +146,6 @@ function pointToLayer(feature, latlng, attributes) {
     var layer = L.circleMarker(latlng, geoJsonMarkerOptions);
 
     //build popup content string
-
     var popupContent =  new PopupContent(feature.properties, attribute);
 
     //bind the popup to the circle marker
@@ -162,24 +155,15 @@ function pointToLayer(feature, latlng, attributes) {
 
     //return the circle marker to the L.geoJson pointToLayer option
     return layer;
-
 };
 
 function createPropSymbols(data, attributes) {
     // create a Leaflet GeoJSON layer and add it to the map
     L.geoJson(data, {
-
-        //onEachFeature: onEachFeature, // moved this line into the createPropSymbols() function
-
-        pointToLayer: function (feature, latlng) {
+         pointToLayer: function (feature, latlng) {
             return pointToLayer(feature, latlng, attributes);
         }
-        //create circle markers
-        //   return L.circleMarker(latlng, geoJsonMarkerOptions); 
-
-    }).addTo(map);
-
-
+     }).addTo(map);
 };
 
 // secton 1-3-2 custom leaflet control version of createSequenceControls()
@@ -195,7 +179,6 @@ function createSequenceControls(attributes) {
 
             // initialize other DOM elements
             //create range input element (slider)
-  
             container.insertAdjacentHTML('beforeend', "<input class='range-slider' type='range'></input>");
 
             // add step buttons
@@ -206,7 +189,7 @@ function createSequenceControls(attributes) {
             L.DomEvent.disableClickPropagation(container);
 
             return container;
-        }
+        } // no semicolon!
     });
 
     map.addControl(new SequenceControl()); //add listeners after adding control
@@ -252,7 +235,7 @@ function createSequenceControls(attributes) {
                 // step 9 pass new attribute to update symbols
                 updatePropSymbols(attributes[index]);
             });
-}
+};
 
 // resize proportional symbols according to new attribute values
 function updatePropSymbols(attribute) {
@@ -277,7 +260,7 @@ function updatePropSymbols(attribute) {
     // update the legend with the year displayed on the map
     var year = attribute.split("_")[1];
     
-    // get the index for the currently dipslayed year from yearlyStats{}
+    // get the index for the currently dipslayed year from yearlyStats[]
     var yearStatsIndex = findYearlyStats(year);
 
     // replace the year and stats in the legend with those for the currently displayed year    
@@ -310,7 +293,7 @@ function processData(data) {
 };
 
 // function to retrieve the data and place it on the map
-function getData(map) {
+function getData() {
     // load the data
     fetch("data/metroUnemploymentPop5.geojson")
         .then(function (response) {
@@ -333,6 +316,8 @@ function getData(map) {
         })
 };
 
+
+// function to create a PopupContent class
 function PopupContent(properties, attribute) {
     this.properties = properties;
     this.attribute = attribute;
