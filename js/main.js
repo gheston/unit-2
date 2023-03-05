@@ -22,6 +22,7 @@ var baseMaps  = {
     "Monochrome Blue Basemap": blueBasemap
 };
 
+//var metroAreaBoundariesLayer = L.geoJson(json, metroAreaBoundaryStyle);
 
 
 // function to initiate Leaflet map
@@ -309,7 +310,26 @@ function processData(data) {
 
 // function to retrieve the data and place it on the map
 function getData() {
-    // load the data
+
+    // style for metro Area boundaries
+    var metroAreaBoundaryStyle = {
+        fillColor: "#A65E44",
+        color: "#fff",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.2
+    };
+
+    // load the Metro Area bountdary data
+    fetch("data/MetroAreaBoundaries_Simp.geojson")
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (json) {
+            L.geoJson(json, metroAreaBoundaryStyle).addTo(map);
+         })
+
+    // load the Metro Area unemployment data
     fetch("data/metroUnemploymentPop5.geojson")
         .then(function (response) {
             return response.json();
@@ -332,6 +352,7 @@ function getData() {
             createLayerControl();
 
         })
+
 };
 
 
@@ -416,9 +437,6 @@ function findYearlyStats(year4Stats) {
 function createLayerControl() {
     var layerControl = L.control.layers(baseMaps).addTo(map); // why is layerControl not used, but it works?
 };
-
-
-
 
 document.addEventListener('DOMContentLoaded', createMap);
 
