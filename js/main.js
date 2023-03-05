@@ -9,18 +9,33 @@ var dataStats = {};
 // declare an array to hold statistics for each year
 var yearlyStats = [];
 
+// basemap - Midcentury Modern
+var mcmBasemap = L.tileLayer('https://api.mapbox.com/styles/v1/geraldhestonwisc/claki7gyd000114nxihcnqa4p/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZ2VyYWxkaGVzdG9ud2lzYyIsImEiOiJja3ludzB3d3kwN2EyMndyMDN3cGh4dXkwIn0.INriYzJUUk60r1ffeQBr9g', {
+    attribution: '&copy; <a href="https://www.mapbox.com/contribute/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'});
+
+// basemap - monochhrome blue
+var blueBasemap = L.tileLayer('https://api.mapbox.com/styles/v1/geraldhestonwisc/clevpwcbs000w01l49qtm5sk0/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZ2VyYWxkaGVzdG9ud2lzYyIsImEiOiJja3ludzB3d3kwN2EyMndyMDN3cGh4dXkwIn0.INriYzJUUk60r1ffeQBr9g', {
+    attribution: '&copy; <a href="https://www.mapbox.com/contribute/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' });    
+
+var baseMaps  = {
+    "Midcentury Modern Basemap": mcmBasemap,
+    "Monochrome Blue Basemap": blueBasemap
+};
+
+
+
 // function to initiate Leaflet map
 function createMap() {
     // create the map, centered on USA
     map = L.map('map', {
         center: [39, -96],
-        zoom: 4
+        zoom: 4,
+        minZoom: 4,
+        maxZoom: 7 // limit the zoom levels to something appropriate for this dataset, where the basemap shows the city names
     });
 
     // add my Midcentury Modern Mapbox base tile layer
-    L.tileLayer('https://api.mapbox.com/styles/v1/geraldhestonwisc/claki7gyd000114nxihcnqa4p/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZ2VyYWxkaGVzdG9ud2lzYyIsImEiOiJja3ludzB3d3kwN2EyMndyMDN3cGh4dXkwIn0.INriYzJUUk60r1ffeQBr9g', {
-        attribution: '&copy; <a href="https://www.mapbox.com/contribute/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
+    blueBasemap.addTo(map);
 
     // call getData function
     getData();
@@ -313,6 +328,9 @@ function getData() {
             createSequenceControls(attributes);
             // call function to create the legend with text for the 1st year, 2016
             createLegend(attributes[0]);
+            // call function to create the layer control
+            createLayerControl();
+
         })
 };
 
@@ -393,6 +411,14 @@ function findYearlyStats(year4Stats) {
     return index;
     
 }
+
+//function to add a layer control for the basemap
+function createLayerControl() {
+    var layerControl = L.control.layers(baseMaps).addTo(map); // why is layerControl not used, but it works?
+};
+
+
+
 
 document.addEventListener('DOMContentLoaded', createMap);
 
