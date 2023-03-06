@@ -22,7 +22,10 @@ var baseMaps  = {
     "Monochrome Blue Basemap": blueBasemap
 };
 
-//var metroAreaBoundariesLayer = L.geoJson(json, metroAreaBoundaryStyle);
+var overlayMaps = {
+     "Metro Area": metroAreaPoints,
+     "Metro Area Boundaries" : metroAreaBoundaryLayer
+};
 
 
 // function to initiate Leaflet map
@@ -308,6 +311,9 @@ function processData(data) {
     return attributes;
 };
 
+
+
+
 // function to retrieve the data and place it on the map
 function getData() {
 
@@ -320,14 +326,26 @@ function getData() {
         fillOpacity: 0.2
     };
 
+    //var metroAreaBoundaryLayer = {};
+
+
     // load the Metro Area bountdary data
     fetch("data/MetroAreaBoundaries_Simp.geojson")
         .then(function (response) {
             return response.json();
         })
         .then(function (json) {
-            L.geoJson(json, metroAreaBoundaryStyle).addTo(map);
-         })
+
+            //L.geoJSON(json, metroAreaBoundaryStyle).addTo(map);
+
+            L.geoJSON(json, {
+                onEachFeature: onEachFeature
+               }).addTo(map); 
+            
+//            var metroAreaBoundaryAttributes = processMetroAreaBoundaryData(json);
+         });
+
+//        var metroAreaPoints = {};
 
     // load the Metro Area unemployment data
     fetch("data/metroUnemploymentPop5.geojson")
@@ -335,7 +353,7 @@ function getData() {
             return response.json();
         })
         .then(function (json) {
-            //create an attribute array
+            //create an attribute array - names of attributes
             var attributes = processData(json);
             // calculate the minimum value
             calcStats(json);
@@ -348,10 +366,14 @@ function getData() {
             createSequenceControls(attributes);
             // call function to create the legend with text for the 1st year, 2016
             createLegend(attributes[0]);
-            // call function to create the layer control
-            createLayerControl();
 
-        })
+
+        });
+
+
+
+            // add a layer control to the map
+            L.control.layers(baseMaps).addTo(map); 
 
 };
 
@@ -433,10 +455,35 @@ function findYearlyStats(year4Stats) {
     
 }
 
-//function to add a layer control for the basemap
-function createLayerControl() {
-    var layerControl = L.control.layers(baseMaps).addTo(map); // why is layerControl not used, but it works?
+// onEachFeature to bind the metro area boundary tooltip
+function onEachFeature(feature, layer) {
+    var tooltipContent = feature.properties.NAME;
+
+    if (feature.properties) {
+        layer.bindTooltip(tooltipContent);
+    };
 };
+
+//build an attributes array from the boundary data
+function processMetroAreaBoundaryData(data) {
+    //empty array to hold attributes
+    var attributes = [];
+
+    //properties of the 1st feature in the dataset
+    var properties = data.features[0].properties;
+
+    //push each attribute name into attributes array
+    for (var attribute in properties) {
+        attributes.push(attribute);
+    };
+
+    //check result
+    console.log(attributes);
+
+    return attributes;
+};
+
+
 
 document.addEventListener('DOMContentLoaded', createMap);
 
