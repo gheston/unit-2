@@ -17,7 +17,8 @@ var mcmBasemap = L.tileLayer('https://api.mapbox.com/styles/v1/geraldhestonwisc/
 var blueBasemap = L.tileLayer('https://api.mapbox.com/styles/v1/geraldhestonwisc/clevpwcbs000w01l49qtm5sk0/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZ2VyYWxkaGVzdG9ud2lzYyIsImEiOiJja3ludzB3d3kwN2EyMndyMDN3cGh4dXkwIn0.INriYzJUUk60r1ffeQBr9g', {
     attribution: '&copy; <a href="https://www.mapbox.com/contribute/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' });    
 
-var baseMaps  = {
+// list of basemaps for the legend control
+    var baseMaps  = {
     "Midcentury Modern Basemap": mcmBasemap,
     "Monochrome Blue Basemap": blueBasemap
 };
@@ -120,8 +121,8 @@ function calcYearlyStats(data) {
 
 // calculate the radius of each proportional symbold
 function calcPropRadius(attValue) {
-    // constant factor adjusts symbol sizes evenly
-    var minRadius = 5;
+    // constant factor adjusts symbol sizes evenly - 7 looked the best at a national scale
+    var minRadius = 7;
     //Flannery appearance compensation formula
     var radius = 1.0083 * Math.pow(attValue / dataStats.min, 0.5715) * minRadius;
 
@@ -284,6 +285,8 @@ function updatePropSymbols(attribute) {
     document.querySelector("span.min").innerHTML = yearlyStats[yearStatsIndex].min;
     document.querySelector("span.mean").innerHTML = yearlyStats[yearStatsIndex].mean;
     document.querySelector("span.max").innerHTML = yearlyStats[yearStatsIndex].max;
+
+    //document.querySelector("circle#id").innerHTML = 
 };
 
 //build an attributes array from the data
@@ -323,9 +326,6 @@ function getData() {
         fillOpacity: 0.2
     };
 
-
-
-
     // load the Metro Area bountdary data
     fetch("data/MetroAreaBoundaries_Simp.geojson")
         .then(function (response) {
@@ -333,9 +333,7 @@ function getData() {
         })
         .then(function (json) {
             L.geoJSON(json, metroAreaBoundaryStyle).addTo(map);
-         });
-
-
+        });
 
     // load the Metro Area unemployment data
     fetch("data/metroUnemploymentPop5.geojson")
@@ -360,10 +358,8 @@ function getData() {
 
         });
 
-
-
-            // add a layer control to the map
-            L.control.layers(baseMaps).addTo(map); 
+    // add a layer control to the map
+    L.control.layers(baseMaps).addTo(map);
 
 };
 
@@ -409,7 +405,8 @@ function createLegend(attributes){
             for (var i=0; i<circles.length; i++) {
                 
                 // assign the r and cy attributes
-                var radius = calcPropRadius(dataStats[circles[i]]);
+                //var radius = calcPropRadius(dataStats[circles[i]]);
+                var radius = calcPropRadius(yearlyStats[yearStatsIndex][circles[i]]);
                 var cy = 50 - radius;
                 
                 //circle string
@@ -419,7 +416,7 @@ function createLegend(attributes){
                 var textY = i * 15 + 20;
 
                 // text string; i didn't want the min/max/mean, just the numbers
-                svg += '<text id="' + circles[i] + '-text" x="65" y="' + textY + '">'  + dataStats[circles[i]] + ' %' + '</text>';
+                svg += '<text id="' + circles[i] + '-text" x="65" y="' + textY + '">'  + yearlyStats[yearStatsIndex][circles[i]] + ' %' + '</text>';
             };
             
             //close svg string
