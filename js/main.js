@@ -310,9 +310,12 @@ function updatePropSymbols(attribute) {
 
     // replace the year and stats in the legend with those for the currently displayed year    
     document.querySelector("span.year").innerHTML = year;
-    document.querySelector("span.min").innerHTML = yearlyStats[yearStatsIndex].min;
-    document.querySelector("span.mean").innerHTML = yearlyStats[yearStatsIndex].mean;
-    document.querySelector("span.max").innerHTML = yearlyStats[yearStatsIndex].max;
+    document.querySelector("tspan.min").innerHTML = yearlyStats[yearStatsIndex].min;
+    document.querySelector("tspan.mean").innerHTML = yearlyStats[yearStatsIndex].mean;
+    document.querySelector("tspan.max").innerHTML = yearlyStats[yearStatsIndex].max;
+
+    //document.querySelector("span.min").innerHTML = yearlyStats[yearStatsIndex].min;
+
 
     //document.querySelector("circle#id").innerHTML = 
 };
@@ -399,34 +402,29 @@ function createLegend(attributes){
             //insert text "Average Unemployment Rate in *Year*"
             //            "Min: x% - Mean: x% - Max: x%" - stats for the currently displayed year, to keep them separate from the 
             //                  symbol legend which displays stats for the entire time range
-            container.innerHTML = '<p class="temporal legend">Average Unemployment Rate in <span class="year">' + year + '</span></p>' + '<p>Min: <span class="min">' + yearlyStats[yearStatsIndex].min + '</span>% - Mean: <span class="mean">' + yearlyStats[yearStatsIndex].mean + '</span> % - Max: <span class="max">' + yearlyStats[yearStatsIndex].max + '</span>%</p>' + '<p>---</p><p>Ranges over time period:' ;
+            container.innerHTML = '<p class="temporal legend">Average Unemployment Rate in <span class="year">' + year + '</span></p>'
+            // + '<p>Min: <span class="min">' + yearlyStats[yearStatsIndex].min + '</span>% - Mean: <span class="mean">' + yearlyStats[yearStatsIndex].mean + '</span> % - Max: <span class="max">' + yearlyStats[yearStatsIndex].max + '</span>%</p>' + '<p>---</p><p>Ranges over time period:' ;
 
             // start the svg element 
             var svg = '<svg id="attribute legend" width="160px" height="60px">';
             
             //array of circle names to base loop on
-            var circles = ["max", "mean", "min"];
+            //var circles = ["max", "mean", "min"];
 
-            var radius = calcPropRadius(yearlyStats[yearStatsIndex].max);
-            var cy = 50 - radius;
+            var maxRadius = calcPropRadius(yearlyStats[yearStatsIndex].max);
+            var maxCy = 50 - maxRadius;
 
-            svg += '<circle class="legend-circle" id="circle-max" r="' + radius + '"cy="' + cy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
+            svg += '<circle class="legend-circle" id="circle-max" r="' + maxRadius + '"cy="' + maxCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/><text id="circle-max-text" x="65" y="' + 20 + '">Max: <tspan class="max">' + yearlyStats[yearStatsIndex].max + '</tspan> %</text>';
 
-            svg += '<text id="circle-max-text" x="65" y="' + 20 + '">'  + yearlyStats[yearStatsIndex].max + ' %' + '</text>';
+            var meanRadius = calcPropRadius(yearlyStats[yearStatsIndex].mean);
+            meanCy = 50 - meanRadius;
 
-            svg += "</svg>";
+            svg += '<circle class="legend-circle" id="circle-mean" r="' + meanRadius + '"cy="' + meanCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/><text id="circle-mean-text" x="65" y="' + 35 + '">Mean: <tspan class="mean">'  + yearlyStats[yearStatsIndex].mean + '</tspan> %</text>';
 
+            var minRadius = calcPropRadius(yearlyStats[yearStatsIndex].min);
+            minCy = 50 - minRadius;
 
-            svg += '<circle class="legend-circle" id="circle-max" r="' + radius + '"cy="' + cy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
-
-            svg += '<text id="circle-max-text" x="65" y="' + 20 + '">'  + yearlyStats[yearStatsIndex].max + ' %' + '</text>';
-
-            svg += "</svg>";
-
-            
-            svg += '<circle class="legend-circle" id="circle-max" r="' + radius + '"cy="' + cy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
-
-            svg += '<text id="circle-max-text" x="65" y="' + 20 + '">'  + yearlyStats[yearStatsIndex].max + ' %' + '</text>';
+            svg += '<circle class="legend-circle" id="circle-min" r="' + minRadius + '"cy="' + minCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/><text id="circle-min-text" x="65" y="' + 50 + '">Min: <tspan class="min">'  + yearlyStats[yearStatsIndex].min + '</tspan> %</text>';
 
             svg += "</svg>";
 
