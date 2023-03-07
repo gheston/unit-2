@@ -26,7 +26,10 @@ var blueBasemap = L.tileLayer('https://api.mapbox.com/styles/v1/geraldhestonwisc
 // control layer for the legend control
 var controlLayers = L.control.layers();
 
+//var layerGroup = L.layerGroup();
 
+// global var for the metro area boundaries layer, assigned in getMetroAreaBoundaryData();
+var metroAreaBoundaryLayerGlobal = L.geoJSON();
 
 // function to initiate Leaflet map
 function createMap() {
@@ -48,13 +51,23 @@ function createMap() {
     // call getData function to process the point layer
     getData();
 
-
-
-    // add a layer control to the map
-    //controlLayers.addBaseLayer(baseMaps);
-    //L.control.layers(baseMaps).addTo(map);
+    // add a base layer control to the map - has to be individually with the .addBaseLayer() method, not as a group object
     controlLayers.addBaseLayer(mcmBasemap, "Mid-century Modern base map");
     controlLayers.addBaseLayer(blueBasemap, "Blue base map");
+
+    // layerGroup.addLayer(metroAreaBoundaryLayerGlobal);
+    // console.log(layerGroup.hasLayer(metroAreaBoundaryLayerGlobal));
+
+    map.on('zoomend', function() {
+        if (map.getZoom() <6){
+          map.removeLayer(metroAreaBoundaryLayerGlobal );//1st geoJSON layer
+         }else{
+        map.addLayer(metroAreaBoundaryLayerGlobal);
+         }
+        });
+        
+        // force the polygon layer to the back; works here becuase there are only 2 layers in this map
+        metroAreaBoundaryLayerGlobal.bringToBack();
 
 };
 
@@ -332,8 +345,6 @@ function processData(data) {
 // function to retrieve the data and place it on the map
 function getData() {
 
-    
-
     // load the Metro Area unemployment data
     fetch("data/metroUnemploymentPop5.geojson")
         .then(function (response) {
@@ -356,10 +367,6 @@ function getData() {
 
 
         });
-
-    // add a layer control to the map
-    //L.control.layers(baseMaps).addTo(map);
-
 };
 
 
@@ -400,26 +407,49 @@ function createLegend(attributes){
             //array of circle names to base loop on
             var circles = ["max", "mean", "min"];
 
-            // loop to add each circle and text to svg string
-            for (var i=0; i<circles.length; i++) {
-                
-                // assign the r and cy attributes
-                //var radius = calcPropRadius(dataStats[circles[i]]);
-                var radius = calcPropRadius(yearlyStats[yearStatsIndex][circles[i]]);
-                var cy = 50 - radius;
-                
-                //circle string
-                svg += '<circle class="legend-circle" id="' + circles[i] + '" r="' + radius + '"cy="' + cy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
+            var radius = calcPropRadius(yearlyStats[yearStatsIndex].max);
+            var cy = 50 - radius;
 
-                // evenly space out labels
-                var textY = i * 15 + 20;
+            svg += '<circle class="legend-circle" id="circle-max" r="' + radius + '"cy="' + cy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
 
-                // text string; i didn't want the min/max/mean, just the numbers
-                svg += '<text id="' + circles[i] + '-text" x="65" y="' + textY + '">'  + yearlyStats[yearStatsIndex][circles[i]] + ' %' + '</text>';
-            };
-            
-            //close svg string
+            svg += '<text id="circle-max-text" x="65" y="' + 20 + '">'  + yearlyStats[yearStatsIndex].max + ' %' + '</text>';
+
             svg += "</svg>";
+
+
+            svg += '<circle class="legend-circle" id="circle-max" r="' + radius + '"cy="' + cy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
+
+            svg += '<text id="circle-max-text" x="65" y="' + 20 + '">'  + yearlyStats[yearStatsIndex].max + ' %' + '</text>';
+
+            svg += "</svg>";
+
+            
+            svg += '<circle class="legend-circle" id="circle-max" r="' + radius + '"cy="' + cy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
+
+            svg += '<text id="circle-max-text" x="65" y="' + 20 + '">'  + yearlyStats[yearStatsIndex].max + ' %' + '</text>';
+
+            svg += "</svg>";
+
+            // loop to add each circle and text to svg string
+            // for (var i=0; i<circles.length; i++) {
+                
+            //     // assign the r and cy attributes
+            //     //var radius = calcPropRadius(dataStats[circles[i]]);
+            //     var radius = calcPropRadius(yearlyStats[yearStatsIndex][circles[i]]);
+            //     var cy = 50 - radius;
+                
+            //     //circle string
+            //     svg += '<circle class="legend-circle" id="' + circles[i] + '" r="' + radius + '"cy="' + cy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
+
+            //     // evenly space out labels
+            //     var textY = i * 15 + 20;
+
+            //     // text string; i didn't want the min/max/mean, just the numbers
+            //     svg += '<text id="' + circles[i] + '-text" x="65" y="' + textY + '">'  + yearlyStats[yearStatsIndex][circles[i]] + ' %' + '</text>';
+            // };
+            
+            // //close svg string
+            // svg += "</svg>";
             
             //add attribute legend svg to container
             container.insertAdjacentHTML('beforeend', svg);
@@ -441,6 +471,7 @@ function findYearlyStats(year4Stats) {
     
 }
 
+//function to import the metro area boundary data geojson, style it, and add it tothe layer control
 function getMetroAreaBoundaryData() {
     // style for metro Area boundaries
     var metroAreaBoundaryStyle = {
@@ -457,10 +488,15 @@ function getMetroAreaBoundaryData() {
             return response.json();
         })
         .then(function (json) {
-            var metroAreaBoundaryLayer = L.geoJSON(json, metroAreaBoundaryStyle).addTo(map);
-
-            controlLayers.addOverlay(metroAreaBoundaryLayer, 'Metro Area Boundaries');
+            metroAreaBoundaryLayerGlobal = L.geoJSON(json, metroAreaBoundaryStyle)//.addTo(map); took this out so that it wouldn't be added to the map when it first loads, then it will turn on when the zoom reaches level 6
             
+
+            // add the layer to the Layers control
+            controlLayers.addOverlay(metroAreaBoundaryLayerGlobal, 'Metro Area Boundaries');
+                      
+
+
+
         });
 }
 
