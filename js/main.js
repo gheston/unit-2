@@ -18,11 +18,13 @@ var blueBasemap = L.tileLayer('https://api.mapbox.com/styles/v1/geraldhestonwisc
     attribution: '&copy; <a href="https://www.mapbox.com/contribute/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' });    
 
 // list of basemaps for the legend control
-    var baseMaps  = {
-    "Midcentury Modern Basemap": mcmBasemap,
-    "Monochrome Blue Basemap": blueBasemap
-};
+// var baseMaps  = {
+//     "Midcentury Modern Basemap": mcmBasemap,
+//     "Monochrome Blue Basemap": blueBasemap
+// };
 
+// control layer for the legend control
+var controlLayers = L.control.layers();
 
 
 
@@ -37,10 +39,23 @@ function createMap() {
     });
 
     // add my Midcentury Modern Mapbox base tile layer
-    blueBasemap.addTo(map);
+    mcmBasemap.addTo(map);
 
-    // call getData function
+    // call the function to process the metro area boundaries polygon layer
+    getMetroAreaBoundaryData();
+    controlLayers.addTo(map);
+
+    // call getData function to process the point layer
     getData();
+
+
+
+    // add a layer control to the map
+    //controlLayers.addBaseLayer(baseMaps);
+    //L.control.layers(baseMaps).addTo(map);
+    controlLayers.addBaseLayer(mcmBasemap, "Mid-century Modern base map");
+    controlLayers.addBaseLayer(blueBasemap, "Blue base map");
+
 };
 
 function calcStats(data) {
@@ -317,23 +332,7 @@ function processData(data) {
 // function to retrieve the data and place it on the map
 function getData() {
 
-    // style for metro Area boundaries
-    var metroAreaBoundaryStyle = {
-        fillColor: "#A65E44",
-        color: "#fff",
-        weight: 1,
-        opacity: 1,
-        fillOpacity: 0.2
-    };
-
-    // load the Metro Area bountdary data
-    fetch("data/MetroAreaBoundaries_Simp.geojson")
-        .then(function (response) {
-            return response.json();
-        })
-        .then(function (json) {
-            L.geoJSON(json, metroAreaBoundaryStyle).addTo(map);
-        });
+    
 
     // load the Metro Area unemployment data
     fetch("data/metroUnemploymentPop5.geojson")
@@ -359,7 +358,7 @@ function getData() {
         });
 
     // add a layer control to the map
-    L.control.layers(baseMaps).addTo(map);
+    //L.control.layers(baseMaps).addTo(map);
 
 };
 
@@ -442,7 +441,28 @@ function findYearlyStats(year4Stats) {
     
 }
 
+function getMetroAreaBoundaryData() {
+    // style for metro Area boundaries
+    var metroAreaBoundaryStyle = {
+        fillColor: "#A65E44",
+        color: "#fff",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.2
+    };
 
+    // load the Metro Area bountdary data
+    fetch("data/MetroAreaBoundaries_Simp.geojson")
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (json) {
+            var metroAreaBoundaryLayer = L.geoJSON(json, metroAreaBoundaryStyle).addTo(map);
+
+            controlLayers.addOverlay(metroAreaBoundaryLayer, 'Metro Area Boundaries');
+            
+        });
+}
 
 
 
