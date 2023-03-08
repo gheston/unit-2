@@ -1,5 +1,5 @@
 // GeoJSON with Leaflet
-// Gerald Heston, Geog 575-070, Lab 1, Feb 28 2023
+// Gerald Heston, Geog 575-070, Lab 1, Mar 7 2023
 
 // declare map var in global scope
 var map;
@@ -11,17 +11,14 @@ var yearlyStats = [];
 
 // basemap - Midcentury Modern
 var mcmBasemap = L.tileLayer('https://api.mapbox.com/styles/v1/geraldhestonwisc/claki7gyd000114nxihcnqa4p/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZ2VyYWxkaGVzdG9ud2lzYyIsImEiOiJja3ludzB3d3kwN2EyMndyMDN3cGh4dXkwIn0.INriYzJUUk60r1ffeQBr9g', {
-    attribution: '&copy; <a href="https://www.mapbox.com/contribute/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'});
+    attribution: '&copy; <a href="https://www.mapbox.com/contribute/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+});
 
 // basemap - monochhrome blue
 var blueBasemap = L.tileLayer('https://api.mapbox.com/styles/v1/geraldhestonwisc/clevpwcbs000w01l49qtm5sk0/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZ2VyYWxkaGVzdG9ud2lzYyIsImEiOiJja3ludzB3d3kwN2EyMndyMDN3cGh4dXkwIn0.INriYzJUUk60r1ffeQBr9g', {
-    attribution: '&copy; <a href="https://www.mapbox.com/contribute/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' });    
+    attribution: '&copy; <a href="https://www.mapbox.com/contribute/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+});
 
-// list of basemaps for the legend control
-// var baseMaps  = {
-//     "Midcentury Modern Basemap": mcmBasemap,
-//     "Monochrome Blue Basemap": blueBasemap
-// };
 
 // control layer for the legend control
 var controlLayers = L.control.layers();
@@ -55,27 +52,20 @@ function createMap() {
     controlLayers.addBaseLayer(mcmBasemap, "Mid-century Modern base map");
     controlLayers.addBaseLayer(blueBasemap, "Blue base map");
 
-    // layerGroup.addLayer(metroAreaBoundaryLayerGlobal);
-    // console.log(layerGroup.hasLayer(metroAreaBoundaryLayerGlobal));
-
-    map.on('zoomend', function() {
-        if (map.getZoom() <6){
-          map.removeLayer(metroAreaBoundaryLayerGlobal );//1st geoJSON layer
-         }else{
-        map.addLayer(metroAreaBoundaryLayerGlobal);
-        metroAreaBoundaryLayerGlobal.bringToBack();
-         }
-        });
-        
-        // force the polygon layer to the back; works here becuase there are only 2 layers in this map
-        
+    map.on('zoomend', function () {
+        if (map.getZoom() < 6) {
+            map.removeLayer(metroAreaBoundaryLayerGlobal);//1st geoJSON layer
+        } else {
+            map.addLayer(metroAreaBoundaryLayerGlobal);
+            metroAreaBoundaryLayerGlobal.bringToBack();
+        }
+    });
 
 };
 
 function calcStats(data) {
     //create empty array to store all data values
     var allValues = [];
-
 
     //loop thru each city
     for (var city of data.features) {
@@ -85,26 +75,23 @@ function calcStats(data) {
             //get unempolyment rate for current year
             var value = Number(city.properties["Rate_" + String(year)]); // had to add the Number() - to make sure it was reading them all as numbers and not strings - 
             //console.log(value);
-            
+
             // add value to array
             if (value) { //some of my data entries are null, which are "falsy". then the minValue becomes 0, which is a problem in the Flannery equation because it's dividing by the MinValue (0). This test only passes the truthy (non-null) values into the array.
                 // removed the data rows with null values so  I wouldn't have to deal with them.
                 allValues.push(value);
             }
         }
-    }
+    };
 
-    //    console.log(allValues);
     // get min, max stats for our array
     dataStats.min = Math.min(...allValues);
     dataStats.max = Math.max(...allValues);
     // calculate mean value
-    var sum = allValues.reduce((a, b) =>  a + b);
-    //console.log("sum: ", sum);
+    var sum = allValues.reduce((a, b) => a + b);
+
     dataStats.mean = Math.round(sum / allValues.length * 10) / 10; //rounds to 1 decimal place
-    // console.log("max: ", dataStats.max);
-    // console.log("mean: ", dataStats.mean);
-    // console.log("min: ", dataStats.min);
+
 };
 
 // function to calculate statistics for eah year of data
@@ -118,7 +105,7 @@ function calcYearlyStats(data) {
             var value = Number(city.properties["Rate_" + String(year)]);
             yearlyValues.push(value);
         }
-        
+
         //calculates the statistics
         var yearlyMin = Math.min(...yearlyValues);
         var yearlyMax = Math.max(...yearlyValues);
@@ -136,16 +123,10 @@ function calcYearlyStats(data) {
 
         //adds the one-year object to the yearlyStats[] array
         yearlyStats.push(oneYearStats);
-        
+
         //empties out the array to start the loop over fresh
         yearlyValues = [];
     }
-
-    // prints the yearlyStats[] to the console
-    // for (var i = 0; i < yearlyStats.length;  i++) {
-    //     console.log(yearlyStats[i]);
-    // }
-
 };
 
 // calculate the radius of each proportional symbold
@@ -155,20 +136,14 @@ function calcPropRadius(attValue) {
     //Flannery appearance compensation formula
     var radius = 1.0083 * Math.pow(attValue / dataStats.min, 0.5715) * minRadius;
 
-    //console.log(radius);
-
     return radius;
 }
-
-
 
 //function to convert markers to circle markers
 function pointToLayer(feature, latlng, attributes) {
     // mapping average unemployment rate for each year
-    //console.log(attributes);
-    
+
     var attribute = attributes[0];
-    //console.log(attribute);
 
     // style for brown circle
     var geoJsonMarkerOptions = {
@@ -182,17 +157,15 @@ function pointToLayer(feature, latlng, attributes) {
 
     //step 5, for each feature, determine its value for the selected attribute
     var attValue = Number(feature.properties[attribute]);
-    //console.log(attValue);
 
     // step 6, give each feature's circle marker a radius based on its attribute value
     geoJsonMarkerOptions.radius = calcPropRadius(attValue);
-    //console.log(geoJsonMarkerOptions.radius);
 
     //create circle marker layer
     var layer = L.circleMarker(latlng, geoJsonMarkerOptions);
 
     //build popup content string
-    var popupContent =  new PopupContent(feature.properties, attribute);
+    var popupContent = new PopupContent(feature.properties, attribute);
 
     //bind the popup to the circle marker
     layer.bindPopup(popupContent.formatted, {
@@ -206,13 +179,13 @@ function pointToLayer(feature, latlng, attributes) {
 function createPropSymbols(data, attributes) {
     // create a Leaflet GeoJSON layer and add it to the map
     L.geoJson(data, {
-         pointToLayer: function (feature, latlng) {
+        pointToLayer: function (feature, latlng) {
             return pointToLayer(feature, latlng, attributes);
         }
-     }).addTo(map);
+    }).addTo(map);
 };
 
-// secton 1-3-2 custom leaflet control version of createSequenceControls()
+// custom leaflet control version of createSequenceControls()
 function createSequenceControls(attributes) {
     var SequenceControl = L.Control.extend({
         options: {
@@ -240,47 +213,47 @@ function createSequenceControls(attributes) {
 
     map.addControl(new SequenceControl()); //add listeners after adding control
 
-            // Step 5 click listener for buttons
+    // Step 5 click listener for buttons
 
-            // //set slider attributes
-            document.querySelector(".range-slider").max = 6; // total ranges 7, 2016 to 2022
-            document.querySelector(".range-slider").min = 0; // first range index
-            document.querySelector(".range-slider").value = 0;
-            document.querySelector(".range-slider").step = 1;
+    // //set slider attributes
+    document.querySelector(".range-slider").max = 6; // total ranges 7, 2016 to 2022
+    document.querySelector(".range-slider").min = 0; // first range index
+    document.querySelector(".range-slider").value = 0;
+    document.querySelector(".range-slider").step = 1;
 
-            document.querySelectorAll('.step').forEach(function (step) {
-                step.addEventListener("click", function () {
-                    var index = document.querySelector('.range-slider').value;
+    document.querySelectorAll('.step').forEach(function (step) {
+        step.addEventListener("click", function () {
+            var index = document.querySelector('.range-slider').value;
 
-                    //Step 6 increment or decrement depending on button clicked
-                    if (step.id == 'forward') {
-                        index++;
-                        //step 7: if past the last attribute, wrap around to first attribute
-                        index = index > 6 ? 0 : index;
+            //Step 6 increment or decrement depending on button clicked
+            if (step.id == 'forward') {
+                index++;
+                //step 7: if past the last attribute, wrap around to first attribute
+                index = index > 6 ? 0 : index;
 
-                    } else if (step.id == 'reverse') {
-                        index--;
-                        //step 7: if past the first attribute, wrap around to the last attribute
-                        index < 0 ? 6 : index;
-                    };
+            } else if (step.id == 'reverse') {
+                index--;
+                //step 7: if past the first attribute, wrap around to the last attribute
+                index < 0 ? 6 : index;
+            };
 
-                    // step 8: update slider
-                    document.querySelector('.range-slider').value = index;
+            // step 8: update slider
+            document.querySelector('.range-slider').value = index;
 
-                    // step 9 pass new attribute to update symbols
-                    updatePropSymbols(attributes[index]);
-                })
-            });
+            // step 9 pass new attribute to update symbols
+            updatePropSymbols(attributes[index]);
+        })
+    });
 
-            // Step 5 input listener for slider
-            document.querySelector('.range-slider').addEventListener('input', function () {
-                // get the new index value
-                var index = this.value;
-                //console.log(index);
+    // Step 5 input listener for slider
+    document.querySelector('.range-slider').addEventListener('input', function () {
+        // get the new index value
+        var index = this.value;
+        //console.log(index);
 
-                // step 9 pass new attribute to update symbols
-                updatePropSymbols(attributes[index]);
-            });
+        // step 9 pass new attribute to update symbols
+        updatePropSymbols(attributes[index]);
+    });
 };
 
 // resize proportional symbols according to new attribute values
@@ -305,64 +278,32 @@ function updatePropSymbols(attribute) {
 
     // update the legend with the year displayed on the map
     var year = attribute.split("_")[1];
-    
+
     // get the index for the currently dipslayed year from yearlyStats[]
     var yearStatsIndex = findYearlyStats(year);
 
     document.querySelector("span.year").innerHTML = year;
 
-//array of circle names to base loop on
-            var circles = ["max", "mean", "min"];
+    //array of circle names to base loop on
+    var circles = ["max", "mean", "min"];
 
-//loop to update the legend circles and stats
-            for (var i=0; i<circles.length; i++) {
-                
-            // assign the r and cy attributes
-            var radius = calcPropRadius(yearlyStats[yearStatsIndex][circles[i]]);
-            var cy = 50 - radius;
-            
-           
-            // circle string
-            var circleStr = '<circle class="legend-circle" id="circle-' + circles[i] + '" r="' + radius + '" cy="' + cy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
-            
-            // remove the existing circle and replace it with a new circle
-            document.getElementById("circle-" + circles[i]).remove();
-            document.getElementById("circle-" + circles[i] + "-text").insertAdjacentHTML('beforebegin', circleStr);
-                
-            // update the stats text for each circle
-            document.querySelector("tspan." + circles[i]).innerHTML = yearlyStats[yearStatsIndex][circles[i]];
+    //loop to update the legend circles and stats
+    for (var i = 0; i < circles.length; i++) {
 
-        };
+        // assign the r and cy attributes
+        var radius = calcPropRadius(yearlyStats[yearStatsIndex][circles[i]]);
+        var cy = 50 - radius;
 
+        // circle string
+        var circleStr = '<circle class="legend-circle" id="circle-' + circles[i] + '" r="' + radius + '" cy="' + cy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
 
+        // remove the existing circle and replace it with a new circle
+        document.getElementById("circle-" + circles[i]).remove();
+        document.getElementById("circle-" + circles[i] + "-text").insertAdjacentHTML('beforebegin', circleStr);
 
-    // // replace the year and stats in the legend with those for the currently displayed year    
-    // document.querySelector("span.year").innerHTML = year;
-    // document.querySelector("tspan.min").innerHTML = yearlyStats[yearStatsIndex].min;
-    // document.querySelector("tspan.mean").innerHTML = yearlyStats[yearStatsIndex].mean;
-    // document.querySelector("tspan.max").innerHTML = yearlyStats[yearStatsIndex].max;
-
-
-    // document.getElementById("circle-max").remove();     
-    // var maxRadius = calcPropRadius(yearlyStats[yearStatsIndex].max);
-    // var maxCy = 50 - maxRadius;
-    // var circleStr = '<circle class="legend-circle" id="circle-max" r="' + maxRadius + '" cy="' + maxCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
-    // //console.log(circleStr);
-    // document.getElementById("circle-max-text").insertAdjacentHTML('beforebegin', circleStr);
-    
-    // document.getElementById("circle-mean").remove();     
-    // var meanRadius = calcPropRadius(yearlyStats[yearStatsIndex].mean);
-    // var meanCy = 50 - meanRadius;
-    // var circleStr = '<circle class="legend-circle" id="circle-mean" r="' + meanRadius + '" cy="' + meanCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
-    // //console.log(circleStr);
-    // document.getElementById("circle-mean-text").insertAdjacentHTML('beforebegin', circleStr);
-
-    // document.getElementById("circle-min").remove();     
-    // var minRadius = calcPropRadius(yearlyStats[yearStatsIndex].min);
-    // var minCy = 50 - minRadius;
-    // var circleStr = '<circle class="legend-circle" id="circle-min" r="' + minRadius + '" cy="' + minCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
-    // //console.log(circleStr);
-    // document.getElementById("circle-min-text").insertAdjacentHTML('beforebegin', circleStr);
+        // update the stats text for each circle
+        document.querySelector("tspan." + circles[i]).innerHTML = yearlyStats[yearStatsIndex][circles[i]];
+    };
 };
 
 //build an attributes array from the data
@@ -381,14 +322,8 @@ function processData(data) {
         };
     };
 
-    //check result
-    //console.log(attributes);
-
     return attributes;
 };
-
-
-
 
 // function to retrieve the data and place it on the map
 function getData() {
@@ -412,8 +347,6 @@ function getData() {
             createSequenceControls(attributes);
             // call function to create the legend with text for the 1st year, 2016
             createLegend(attributes[0]);
-
-
         });
 };
 
@@ -428,7 +361,7 @@ function PopupContent(properties, attribute) {
 };
 
 //function to create a Legend with text and proportional symbols
-function createLegend(attributes){
+function createLegend(attributes) {
     var LegendControl = L.Control.extend({
         options: {
             position: 'bottomright'
@@ -445,43 +378,39 @@ function createLegend(attributes){
             var yearStatsIndex = findYearlyStats(year);
 
             //insert text "Average Unemployment Rate in *Year*"
-            //            "Min: x% - Mean: x% - Max: x%" - stats for the currently displayed year, to keep them separate from the 
-            //                  symbol legend which displays stats for the entire time range
             container.innerHTML = '<p class="temporal legend">Average Unemployment Rate in <span class="year">' + year + '</span></p>'
-            // + '<p>Min: <span class="min">' + yearlyStats[yearStatsIndex].min + '</span>% - Mean: <span class="mean">' + yearlyStats[yearStatsIndex].mean + '</span> % - Max: <span class="max">' + yearlyStats[yearStatsIndex].max + '</span>%</p>' + '<p>---</p><p>Ranges over time period:' ;
 
             // start the svg element 
             var svg = '<svg id="attribute legend" width="160px" height="60px">';
-            
-            //array of circle names to base loop on
-            //var circles = ["max", "mean", "min"];
 
-            
+            // get the maximum values
             var maxRadius = calcPropRadius(yearlyStats[yearStatsIndex].max);
             var maxCy = 50 - maxRadius;
 
             svg += '<circle class="legend-circle" id="circle-max" r="' + maxRadius + '"cy="' + maxCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/><text id="circle-max-text" x="65" y="' + 20 + '">Max: <tspan class="max">' + yearlyStats[yearStatsIndex].max + '</tspan> %</text>';
 
+            // get the mean values
             var meanRadius = calcPropRadius(yearlyStats[yearStatsIndex].mean);
             meanCy = 50 - meanRadius;
 
-            svg += '<circle class="legend-circle" id="circle-mean" r="' + meanRadius + '"cy="' + meanCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/><text id="circle-mean-text" x="65" y="' + 35 + '">Mean: <tspan class="mean">'  + yearlyStats[yearStatsIndex].mean + '</tspan> %</text>';
+            svg += '<circle class="legend-circle" id="circle-mean" r="' + meanRadius + '"cy="' + meanCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/><text id="circle-mean-text" x="65" y="' + 35 + '">Mean: <tspan class="mean">' + yearlyStats[yearStatsIndex].mean + '</tspan> %</text>';
 
+            // get the minimum values
             var minRadius = calcPropRadius(yearlyStats[yearStatsIndex].min);
             minCy = 50 - minRadius;
 
-            svg += '<circle class="legend-circle" id="circle-min" r="' + minRadius + '"cy="' + minCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/><text id="circle-min-text" x="65" y="' + 50 + '">Min: <tspan class="min">'  + yearlyStats[yearStatsIndex].min + '</tspan> %</text>';
+            svg += '<circle class="legend-circle" id="circle-min" r="' + minRadius + '"cy="' + minCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/><text id="circle-min-text" x="65" y="' + 50 + '">Min: <tspan class="min">' + yearlyStats[yearStatsIndex].min + '</tspan> %</text>';
 
             svg += "</svg>";
 
             //loop to add each circle and text to svg string
             // for (var i=0; i<circles.length; i++) {
-                
+
             //     // assign the r and cy attributes
             //     //var radius = calcPropRadius(dataStats[circles[i]]);
             //     var radius = calcPropRadius(yearlyStats[yearStatsIndex][circles[i]]);
             //     var cy = 50 - radius;
-                
+
             //     //circle string
             //     svg += '<circle class="legend-circle" id="' + circles[i] + '" r="' + radius + '"cy="' + cy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
 
@@ -491,10 +420,10 @@ function createLegend(attributes){
             //     // text string; i didn't want the min/max/mean, just the numbers
             //     svg += '<text id="' + circles[i] + '-text" x="65" y="' + textY + '">' + circles[i] + ": " + yearlyStats[yearStatsIndex][circles[i]] + ' %' + '</text>';
             // };
-            
+
             // //close svg string
             // svg += "</svg>";
-            
+
             //add attribute legend svg to container
             container.insertAdjacentHTML('beforeend', svg);
 
@@ -505,14 +434,12 @@ function createLegend(attributes){
     map.addControl(new LegendControl());
 };
 
-
 //function to find the index in yearlyStats for the currently displayed year
 function findYearlyStats(year4Stats) {
 
     var index = yearlyStats.findIndex(year1 => year1.year == year4Stats);
 
     return index;
-    
 }
 
 //function to import the metro area boundary data geojson, style it, and add it tothe layer control
@@ -533,18 +460,11 @@ function getMetroAreaBoundaryData() {
         })
         .then(function (json) {
             metroAreaBoundaryLayerGlobal = L.geoJSON(json, metroAreaBoundaryStyle)//.addTo(map); took this out so that it wouldn't be added to the map when it first loads, then it will turn on when the zoom reaches level 6
-            
 
             // add the layer to the Layers control
             controlLayers.addOverlay(metroAreaBoundaryLayerGlobal, 'Metro Area Boundaries');
-                      
-
-
-
         });
 }
-
-
 
 document.addEventListener('DOMContentLoaded', createMap);
 
