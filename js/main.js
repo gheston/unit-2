@@ -3,6 +3,7 @@
 
 // declare map var in global scope
 var map;
+
 // declare an object to hold statistics for the entire dataset
 var dataStats = {};
 
@@ -19,11 +20,8 @@ var blueBasemap = L.tileLayer('https://api.mapbox.com/styles/v1/geraldhestonwisc
     attribution: '&copy; <a href="https://www.mapbox.com/contribute/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 });
 
-
 // control layer for the legend control
 var controlLayers = L.control.layers();
-
-//var layerGroup = L.layerGroup();
 
 // global var for the metro area boundaries layer, assigned in getMetroAreaBoundaryData();
 var metroAreaBoundaryLayerGlobal = L.geoJSON();
@@ -74,7 +72,6 @@ function calcStats(data) {
         for (var year = 2016; year <= 2022; year += 1) {
             //get unempolyment rate for current year
             var value = Number(city.properties["Rate_" + String(year)]); // had to add the Number() - to make sure it was reading them all as numbers and not strings - 
-            //console.log(value);
 
             // add value to array
             if (value) { //some of my data entries are null, which are "falsy". then the minValue becomes 0, which is a problem in the Flannery equation because it's dividing by the MinValue (0). This test only passes the truthy (non-null) values into the array.
@@ -380,8 +377,12 @@ function createLegend(attributes) {
             //insert text "Average Unemployment Rate in *Year*"
             container.innerHTML = '<p class="temporal legend">Average Unemployment Rate in <span class="year">' + year + '</span></p>'
 
+
+
             // start the svg element 
             var svg = '<svg id="attribute legend" width="160px" height="60px">';
+
+            // I took this out of the loop to work with it but I could probably put it back in.
 
             // get the maximum values
             var maxRadius = calcPropRadius(yearlyStats[yearStatsIndex].max);
@@ -402,27 +403,6 @@ function createLegend(attributes) {
             svg += '<circle class="legend-circle" id="circle-min" r="' + minRadius + '"cy="' + minCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/><text id="circle-min-text" x="65" y="' + 50 + '">Min: <tspan class="min">' + yearlyStats[yearStatsIndex].min + '</tspan> %</text>';
 
             svg += "</svg>";
-
-            //loop to add each circle and text to svg string
-            // for (var i=0; i<circles.length; i++) {
-
-            //     // assign the r and cy attributes
-            //     //var radius = calcPropRadius(dataStats[circles[i]]);
-            //     var radius = calcPropRadius(yearlyStats[yearStatsIndex][circles[i]]);
-            //     var cy = 50 - radius;
-
-            //     //circle string
-            //     svg += '<circle class="legend-circle" id="' + circles[i] + '" r="' + radius + '"cy="' + cy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
-
-            //     // evenly space out labels
-            //     var textY = i * 15 + 20;
-
-            //     // text string; i didn't want the min/max/mean, just the numbers
-            //     svg += '<text id="' + circles[i] + '-text" x="65" y="' + textY + '">' + circles[i] + ": " + yearlyStats[yearStatsIndex][circles[i]] + ' %' + '</text>';
-            // };
-
-            // //close svg string
-            // svg += "</svg>";
 
             //add attribute legend svg to container
             container.insertAdjacentHTML('beforeend', svg);

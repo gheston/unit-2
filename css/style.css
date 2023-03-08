@@ -133,3 +133,7 @@ a {
     text-decoration: none;
 
 }
+
+.leaflet-control-layers {
+    font-family: 'Jost', sans-serif;
+}
