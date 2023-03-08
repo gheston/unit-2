@@ -1,12 +1,43 @@
 /*Add CSS styles here*/
+body {
+    font-family: 'Jost', sans-serif;
+
+    background-image: linear-gradient(to right, #d9a78b, #a65e44);
+}  
+
+h1 {
+    text-align: center;
+    font-family: 'Jost', sans-serif;
+    text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.2);
+    padding-top: 20px;
+}
+
+
+
 #map {
     height: 400px; 
     width: 80%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#chart {
+    height: auto; 
+    width: 80%;
     display: inline-block;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 h1, h3, h4, text, p, span {
     font-family: 'Jost', sans-serif;
+}
+
+h3 {
+    padding-top: 15px;
+    text-align: center;
 }
 
 h4 {
@@ -80,6 +111,6 @@ svg {
     display: inline-block;
 }
 
-span {
+/* span {
     display: inline-block;
-}
+} */

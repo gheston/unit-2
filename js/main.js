@@ -63,11 +63,12 @@ function createMap() {
           map.removeLayer(metroAreaBoundaryLayerGlobal );//1st geoJSON layer
          }else{
         map.addLayer(metroAreaBoundaryLayerGlobal);
+        metroAreaBoundaryLayerGlobal.bringToBack();
          }
         });
         
         // force the polygon layer to the back; works here becuase there are only 2 layers in this map
-        metroAreaBoundaryLayerGlobal.bringToBack();
+        
 
 };
 
