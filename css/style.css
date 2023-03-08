@@ -31,7 +31,11 @@ h1 {
     margin-right: auto;
 }
 
-h1, h3, h4, text, p, span {
+h1, h3, h4, text, p, {
+    font-family: 'Jost', sans-serif;
+}
+
+.leaflet-control-attribution {
     font-family: 'Jost', sans-serif;
 }
 
@@ -61,17 +65,18 @@ h4 {
 }
 
 .range-slider {
-    width: 250px;
+    width: 150px;
     
 }
 
 .step {
-    width: 40px;
+    width: 30px;
 }
 
 .step i {
     width: 100%;
     height: auto;
+    vertical-align: center;
 }
 
 #forward {
@@ -83,8 +88,8 @@ h4 {
 }
 
 .sequence-control-container {
-    width: 350px;
-    height: 30px;
+    width: 260px;
+    height: 50px;
     background-color: rgba(255,255,255,0.8);
     padding: 10px;
     line-height: 45px;
@@ -97,6 +102,8 @@ h4 {
     background-color: rgba(255,255,255,0.8);
     text-align: center;
     border: solid gray 1px;
+    padding-top: 10px;
+    font-family: 'Jost', sans-serif;
 }
 
 .legend-control-container p {
@@ -111,6 +118,18 @@ svg {
     display: inline-block;
 }
 
-/* span {
+button {
+    height: 35px;
+    vertical-align: top;
+    padding-bottom: 5px;
+    background-color: #ddd;
     display: inline-block;
-} */
+    
+}
+
+a {
+    font-weight: bold;
+    color: black;
+    text-decoration: none;
+
+}
