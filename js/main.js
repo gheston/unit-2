@@ -314,10 +314,14 @@ function updatePropSymbols(attribute) {
     document.querySelector("tspan.mean").innerHTML = yearlyStats[yearStatsIndex].mean;
     document.querySelector("tspan.max").innerHTML = yearlyStats[yearStatsIndex].max;
 
-    //document.querySelector("span.min").innerHTML = yearlyStats[yearStatsIndex].min;
 
-
-    //document.querySelector("circle#id").innerHTML = 
+    document.querySelector("circle.circle-max").remove();     
+    var maxRadius = calcPropRadius(yearlyStats[yearStatsIndex].max);
+    var maxCy = 50 - maxRadius;
+    var circleStr = '<circle class="circle-max" r="' + maxRadius + '" cy="' + maxCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
+    //console.log(circleStr);
+    document.getElementById("circle-max-text").insertAdjacentHTML('beforebegin', circleStr);
+    
 };
 
 //build an attributes array from the data
@@ -411,10 +415,11 @@ function createLegend(attributes){
             //array of circle names to base loop on
             //var circles = ["max", "mean", "min"];
 
+            
             var maxRadius = calcPropRadius(yearlyStats[yearStatsIndex].max);
             var maxCy = 50 - maxRadius;
 
-            svg += '<circle class="legend-circle" id="circle-max" r="' + maxRadius + '"cy="' + maxCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/><text id="circle-max-text" x="65" y="' + 20 + '">Max: <tspan class="max">' + yearlyStats[yearStatsIndex].max + '</tspan> %</text>';
+            svg += '<circle class="circle-max" r="' + maxRadius + '"cy="' + maxCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/><text id="circle-max-text" x="65" y="' + 20 + '">Max: <tspan class="max">' + yearlyStats[yearStatsIndex].max + '</tspan> %</text>';
 
             var meanRadius = calcPropRadius(yearlyStats[yearStatsIndex].mean);
             meanCy = 50 - meanRadius;
@@ -428,7 +433,7 @@ function createLegend(attributes){
 
             svg += "</svg>";
 
-            // loop to add each circle and text to svg string
+            //loop to add each circle and text to svg string
             // for (var i=0; i<circles.length; i++) {
                 
             //     // assign the r and cy attributes
@@ -443,7 +448,7 @@ function createLegend(attributes){
             //     var textY = i * 15 + 20;
 
             //     // text string; i didn't want the min/max/mean, just the numbers
-            //     svg += '<text id="' + circles[i] + '-text" x="65" y="' + textY + '">'  + yearlyStats[yearStatsIndex][circles[i]] + ' %' + '</text>';
+            //     svg += '<text id="' + circles[i] + '-text" x="65" y="' + textY + '">' + circles[i] + ": " + yearlyStats[yearStatsIndex][circles[i]] + ' %' + '</text>';
             // };
             
             // //close svg string
