@@ -308,20 +308,60 @@ function updatePropSymbols(attribute) {
     // get the index for the currently dipslayed year from yearlyStats[]
     var yearStatsIndex = findYearlyStats(year);
 
-    // replace the year and stats in the legend with those for the currently displayed year    
     document.querySelector("span.year").innerHTML = year;
-    document.querySelector("tspan.min").innerHTML = yearlyStats[yearStatsIndex].min;
-    document.querySelector("tspan.mean").innerHTML = yearlyStats[yearStatsIndex].mean;
-    document.querySelector("tspan.max").innerHTML = yearlyStats[yearStatsIndex].max;
+
+//array of circle names to base loop on
+            var circles = ["max", "mean", "min"];
+
+//loop to update the legend circles and stats
+            for (var i=0; i<circles.length; i++) {
+                
+            // assign the r and cy attributes
+            var radius = calcPropRadius(yearlyStats[yearStatsIndex][circles[i]]);
+            var cy = 50 - radius;
+            
+           
+            // circle string
+            var circleStr = '<circle class="legend-circle" id="circle-' + circles[i] + '" r="' + radius + '" cy="' + cy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
+            
+            // remove the existing circle and replace it with a new circle
+            document.getElementById("circle-" + circles[i]).remove();
+            document.getElementById("circle-" + circles[i] + "-text").insertAdjacentHTML('beforebegin', circleStr);
+                
+            // update the stats text for each circle
+            document.querySelector("tspan." + circles[i]).innerHTML = yearlyStats[yearStatsIndex][circles[i]];
+
+        };
 
 
-    document.querySelector("circle.circle-max").remove();     
-    var maxRadius = calcPropRadius(yearlyStats[yearStatsIndex].max);
-    var maxCy = 50 - maxRadius;
-    var circleStr = '<circle class="circle-max" r="' + maxRadius + '" cy="' + maxCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
-    //console.log(circleStr);
-    document.getElementById("circle-max-text").insertAdjacentHTML('beforebegin', circleStr);
+
+    // // replace the year and stats in the legend with those for the currently displayed year    
+    // document.querySelector("span.year").innerHTML = year;
+    // document.querySelector("tspan.min").innerHTML = yearlyStats[yearStatsIndex].min;
+    // document.querySelector("tspan.mean").innerHTML = yearlyStats[yearStatsIndex].mean;
+    // document.querySelector("tspan.max").innerHTML = yearlyStats[yearStatsIndex].max;
+
+
+    // document.getElementById("circle-max").remove();     
+    // var maxRadius = calcPropRadius(yearlyStats[yearStatsIndex].max);
+    // var maxCy = 50 - maxRadius;
+    // var circleStr = '<circle class="legend-circle" id="circle-max" r="' + maxRadius + '" cy="' + maxCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
+    // //console.log(circleStr);
+    // document.getElementById("circle-max-text").insertAdjacentHTML('beforebegin', circleStr);
     
+    // document.getElementById("circle-mean").remove();     
+    // var meanRadius = calcPropRadius(yearlyStats[yearStatsIndex].mean);
+    // var meanCy = 50 - meanRadius;
+    // var circleStr = '<circle class="legend-circle" id="circle-mean" r="' + meanRadius + '" cy="' + meanCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
+    // //console.log(circleStr);
+    // document.getElementById("circle-mean-text").insertAdjacentHTML('beforebegin', circleStr);
+
+    // document.getElementById("circle-min").remove();     
+    // var minRadius = calcPropRadius(yearlyStats[yearStatsIndex].min);
+    // var minCy = 50 - minRadius;
+    // var circleStr = '<circle class="legend-circle" id="circle-min" r="' + minRadius + '" cy="' + minCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/>';
+    // //console.log(circleStr);
+    // document.getElementById("circle-min-text").insertAdjacentHTML('beforebegin', circleStr);
 };
 
 //build an attributes array from the data
@@ -419,7 +459,7 @@ function createLegend(attributes){
             var maxRadius = calcPropRadius(yearlyStats[yearStatsIndex].max);
             var maxCy = 50 - maxRadius;
 
-            svg += '<circle class="circle-max" r="' + maxRadius + '"cy="' + maxCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/><text id="circle-max-text" x="65" y="' + 20 + '">Max: <tspan class="max">' + yearlyStats[yearStatsIndex].max + '</tspan> %</text>';
+            svg += '<circle class="legend-circle" id="circle-max" r="' + maxRadius + '"cy="' + maxCy + '" fill="#a65e44" fill-opacity="0.8" stroke="#fff" cx="30"/><text id="circle-max-text" x="65" y="' + 20 + '">Max: <tspan class="max">' + yearlyStats[yearStatsIndex].max + '</tspan> %</text>';
 
             var meanRadius = calcPropRadius(yearlyStats[yearStatsIndex].mean);
             meanCy = 50 - meanRadius;
