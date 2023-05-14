@@ -15,7 +15,7 @@ var mcmBasemap = L.tileLayer('https://api.mapbox.com/styles/v1/geraldhestonwisc/
     attribution: '&copy; <a href="https://www.mapbox.com/contribute/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 });
 
-// basemap - monochhrome blue
+// basemap - monochrome blue
 var blueBasemap = L.tileLayer('https://api.mapbox.com/styles/v1/geraldhestonwisc/clevpwcbs000w01l49qtm5sk0/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZ2VyYWxkaGVzdG9ud2lzYyIsImEiOiJja3ludzB3d3kwN2EyMndyMDN3cGh4dXkwIn0.INriYzJUUk60r1ffeQBr9g', {
     attribution: '&copy; <a href="https://www.mapbox.com/contribute/">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 });
@@ -112,7 +112,7 @@ function calcYearlyStats(data) {
         var oneYearStats = {};
 
         // creates the object with statistics
-        //this is probably reduntant, could be combined with steps above
+        //this is probably redundant, could be combined with steps above
         oneYearStats.year = year;
         oneYearStats.min = yearlyMin;
         oneYearStats.max = yearlyMax;
@@ -126,7 +126,7 @@ function calcYearlyStats(data) {
     }
 };
 
-// calculate the radius of each proportional symbold
+// calculate the radius of each proportional symbol
 function calcPropRadius(attValue) {
     // constant factor adjusts symbol sizes evenly - 7 looked the best at a national scale
     var minRadius = 7;
@@ -422,7 +422,7 @@ function findYearlyStats(year4Stats) {
     return index;
 }
 
-//function to import the metro area boundary data geojson, style it, and add it tothe layer control
+//function to import the metro area boundary data geojson, style it, and add it to the layer control
 function getMetroAreaBoundaryData() {
     // style for metro Area boundaries
     var metroAreaBoundaryStyle = {
@@ -433,7 +433,7 @@ function getMetroAreaBoundaryData() {
         fillOpacity: 0.2
     };
 
-    // load the Metro Area bountdary data
+    // load the Metro Area boundary data
     fetch("data/MetroAreaBoundaries_Simp.geojson")
         .then(function (response) {
             return response.json();
